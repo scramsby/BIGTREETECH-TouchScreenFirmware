@@ -1,29 +1,17 @@
-#ifndef _PRINTINGMENU_H_
-#define _PRINTINGMENU_H_
+#ifndef _PRINTING_MENU_H_
+#define _PRINTING_MENU_H_
 
 #ifdef __cplusplus
 extern "C" {
 #endif
 
 #include <stdbool.h>
-#include "variants.h"
-#include "ff.h"
 
 void menuBeforePrinting(void);
 void menuPrinting(void);
 void printInfoPopup(void);
-extern bool filDataSeen;
 
-typedef struct
-{
-    /* data */
-    char name[30];
-    uint32_t time;
-    float length;
-    float weight;
-    float cost;
-}FILAMENTDATA;
-extern FILAMENTDATA filData;
+extern bool hasFilamentData;
 
 #ifdef __cplusplus
 }

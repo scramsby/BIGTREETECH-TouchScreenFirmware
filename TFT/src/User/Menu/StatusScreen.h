@@ -1,20 +1,21 @@
-#ifndef _STATUSSCREEN_H_
-#define _STATUSSCREEN_H_
+#ifndef _STATUS_SCREEN_H_
+#define _STATUS_SCREEN_H_
 
 #ifdef __cplusplus
 extern "C" {
 #endif
 
-#include "includes.h"
+#include <stdint.h>
+#include "GUI.h"
 
-//Colors for drawing the icons
-#define GANTRYLBL_BKCOLOR   0x2187
+// Colors for drawing the icons
+#define GANTRYLBL_BKCOLOR   MAT_DARKSLATE
 #define GANTRYLBL_COLOR     WHITE
 #define HEADING_COLOR       WHITE
 #define VAL_COLOR           BLACK
-#define INFOBOX_BKCOLOR     0x4b0d
-#define INFOBOX_BORDER      0x4b0d
-#define INFOBOX_ICON_COLOR  0x03BF
+#define INFOBOX_BKCOLOR     MAT_SLATE
+#define INFOBOX_BORDER      MAT_SLATE
+#define INFOBOX_ICON_COLOR  MAT_BLUE
 #define INFOMSG_BKCOLOR     WHITE
 #define INFOMSG_COLOR       BLACK
 

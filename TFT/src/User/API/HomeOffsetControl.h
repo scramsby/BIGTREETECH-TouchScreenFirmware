@@ -5,11 +5,29 @@
 extern "C" {
 #endif
 
-/* Set Z offset value */
+#include <stdbool.h>
+#include <stdint.h>
+
+// Enable home offset
+void homeOffsetEnable(bool skipZOffset, float shim);
+
+// Disable home offset
+void homeOffsetDisable(void);
+
+// Get home offset status
+bool homeOffsetGetStatus(void);
+
+// Set Z offset value
 float homeOffsetSetValue(float value);
 
-/* Get current Z offset value */
+// Get current Z offset value
 float homeOffsetGetValue(void);
+
+// Reset Z offset value to default value
+float homeOffsetResetValue(void);
+
+// Update Z offset value
+float homeOffsetUpdateValue(float unit, int8_t direction);
 
 #ifdef __cplusplus
 }

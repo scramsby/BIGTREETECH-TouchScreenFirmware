@@ -15,10 +15,11 @@ static inline void updateCaseLightIcon(MENUITEMS * curmenu, bool state)
 void caseLightBrightnessReDraw()
 {
   char tempstr[20];
+
   sprintf(tempstr, "  %d%%  ", caseLightGetBrightnessPercent());
-  setLargeFont(true);
-  GUI_DispStringInPrect(&exhibitRect, (u8 *)tempstr);
-  setLargeFont(false);
+  setFontSize(FONT_SIZE_LARGE);
+  GUI_DispStringInPrect(&exhibitRect, (uint8_t *)tempstr);
+  setFontSize(FONT_SIZE_NORMAL);
 }
 
 void menuCaseLight(void)
@@ -27,15 +28,17 @@ void menuCaseLight(void)
   MENUITEMS caseLightItems = {
     // title
     LABEL_CASE_LIGHT,
-    // icon                         label
-    {{ICON_DEC,                     LABEL_DEC},
-     {ICON_BACKGROUND,              LABEL_BACKGROUND},
-     {ICON_BACKGROUND,              LABEL_BACKGROUND},
-     {ICON_INC,                     LABEL_INC},
-     {ICON_RGB_WHITE,               LABEL_ON},
-     {ICON_BACKGROUND,              LABEL_BACKGROUND},
-     {ICON_BACKGROUND,              LABEL_BACKGROUND},
-     {ICON_BACK,                    LABEL_BACK},}
+    // icon                          label
+    {
+      {ICON_DEC,                     LABEL_DEC},
+      {ICON_BACKGROUND,              LABEL_BACKGROUND},
+      {ICON_BACKGROUND,              LABEL_BACKGROUND},
+      {ICON_INC,                     LABEL_INC},
+      {ICON_RGB_WHITE,               LABEL_ON},
+      {ICON_BACKGROUND,              LABEL_BACKGROUND},
+      {ICON_BACKGROUND,              LABEL_BACKGROUND},
+      {ICON_BACK,                    LABEL_BACK},
+    }
   };
 
   KEY_VALUES key_num = KEY_IDLE;
@@ -69,8 +72,7 @@ void menuCaseLight(void)
         break;
 
       case KEY_ICON_4:
-        caseLightToggleState();
-        menuDrawPage(&caseLightItems);
+        caseLightSetState(!currentCaseLightState);
         caseLightBrightnessReDraw();
         break;
 

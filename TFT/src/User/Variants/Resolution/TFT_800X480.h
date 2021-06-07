@@ -52,11 +52,11 @@
 #define STATUS_MSG_BODY_BOTTOM    29
 #define STATUS_GANTRY_YOFFSET     6
 
-#define NAME_LARGE_FONT           false
-#define VAL_LARGE_FONT            true
-#define VAL2_LARGE_FONT           false
+#define NAME_LARGE_FONT           FONT_SIZE_NORMAL
+#define VAL_LARGE_FONT            FONT_SIZE_LARGE
+#define VAL2_LARGE_FONT           FONT_SIZE_NORMAL
 
-//Heating Menu
+// Heating Menu
 #define PREHEAT_TITLE_Y   6
 #define PREHEAT_TOOL_Y    65
 #define PREHEAT_BED_Y     105
@@ -66,7 +66,8 @@
 #define PICON_SM_WIDTH     201
 #define PICON_HEIGHT       75
 #define PICON_SPACE_X      ((LCD_WIDTH - PICON_LG_WIDTH*2 - PICON_SM_WIDTH - SPACE_X )/2)
-#define PICON_SPACE_Y      (ICON_HEIGHT + SPACE_Y - PICON_HEIGHT*2)/2
+#define PICON_SPACE_Y      (ICON_HEIGHT + SPACE_Y - PICON_HEIGHT*2)/4
+#define PICON_START_Y      (TITLE_END_Y+5)
 #define PICON_TITLE_X      80
 #define PICON_TITLE_Y      1
 #define PICON_VAL_X        75
@@ -95,6 +96,7 @@
   #define WORD_UNICODE_SIZE       0x480000    // 24*24/8 * 65536(unicode) = 0x480000 bytes(4.5M)
   #define BYTE_ASCII_SIZE           0x1000    // 24*12/8 * 95(visible ascii) = 0x0D5C (+0x1000 4K)
   #define LARGE_FONT_SIZE           0x3000
+  #define _8X16_FONT_SIZE           0x1000
   #define FLASH_SIGN_SIZE           0x1000    // store status of last font/icon/config update
   #define LANGUAGE_SIZE            0x14000
   #define STRINGS_STORE_MAX_SIZE    0x5000    // label strings max size

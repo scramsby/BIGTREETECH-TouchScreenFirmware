@@ -48,10 +48,10 @@
 #define STATUS_MSG_BODY_BOTTOM    4
 #define STATUS_GANTRY_YOFFSET     4
 
-#define NAME_LARGE_FONT           false
-#define VAL_LARGE_FONT            false
+#define NAME_LARGE_FONT           FONT_SIZE_NORMAL
+#define VAL_LARGE_FONT            FONT_SIZE_NORMAL
 
-//Heating Menu
+// Heating Menu
 #define PREHEAT_TITLE_Y   3
 #define PREHEAT_TOOL_Y    32
 #define PREHEAT_BED_Y     55
@@ -61,7 +61,8 @@
 #define PICON_SM_WIDTH     87
 #define PICON_HEIGHT       36
 #define PICON_SPACE_X      ((LCD_WIDTH - PICON_LG_WIDTH*2 - PICON_SM_WIDTH - SPACE_X )/2)
-#define PICON_SPACE_Y      (ICON_HEIGHT + SPACE_Y - PICON_HEIGHT*2)/2
+#define PICON_SPACE_Y      (ICON_HEIGHT + SPACE_Y - PICON_HEIGHT*2)/4
+#define PICON_START_Y      (TITLE_END_Y+5)
 #define PICON_TITLE_X      37
 #define PICON_TITLE_Y      1
 #define PICON_VAL_X        PICON_TITLE_X
