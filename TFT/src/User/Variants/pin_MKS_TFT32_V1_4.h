@@ -1,22 +1,38 @@
-#ifndef _PIN_MKS_TFT32_V1_4_H_ // modify to actual filename !!!
-#define _PIN_MKS_TFT32_V1_4_H_ // modify to actual filename !!!
+#ifndef _PIN_MKS_TFT32_V1_4_H_  // modify to actual filename !!!
+#define _PIN_MKS_TFT32_V1_4_H_  // modify to actual filename !!!
 
 // MCU type (STM32F10x, STM32F2xx)
 #include "stm32f10x.h"
 
+//#undef PORTRAIT_MODE  // comment this line in case the TFT variant supports Portrait Mode
+
 // LCD resolution, font and icon size
 #ifndef TFT_RESOLUTION
   #define TFT_RESOLUTION
-  #include "./Resolution/TFT_320X240.h"
+  #ifdef PORTRAIT_MODE
+    #include "./Resolution/TFT_240X320.h"
+  #else
+    #include "./Resolution/TFT_320X240.h"
+  #endif
 #endif
 
 #ifndef ROOT_DIR
   #define ROOT_DIR "MKS"
 #endif
 
+// Hardware manufacturer
+#ifndef HARDWARE_MANUFACTURER
+  #define HARDWARE_MANUFACTURER "MKS_"
+#endif
+
 // Hardware version config
 #ifndef HARDWARE_VERSION
   #define HARDWARE_VERSION "TFT32_V1.4"
+#endif
+
+// Software manufacturer
+#ifndef SOFTWARE_MANUFACTURER
+  #define SOFTWARE_MANUFACTURER HARDWARE_VERSION"."
 #endif
 
 // LCD interface
@@ -48,8 +64,8 @@
 #define USART3_RX_PIN PD9
 //#define SERIAL_PORT_4 _UART4
 
-// Serial port for debugging Serial communications
-#ifdef DEBUG_SERIAL_COMM
+// Serial port for debugging
+#ifdef SERIAL_DEBUG_ENABLED
   #define SERIAL_DEBUG_PORT SERIAL_PORT_3
 #endif
 
@@ -109,7 +125,7 @@
 //  3) To reduce the effect of EMI, it is strongly suggested to use single cables (possibly shielded) for all the SPI pins
 //     (SPI3_SCK, SPI3_MOSI_PIN and SPI3_CS_PIN). For the encoder pins, a flat cable can be used.
 //  4) In case LCD Encoder's sliding buttons (pin LCD_ENCA_PIN and LCD_ENCB_PIN) don't produce any movement on menu,
-//     try to increase the delay LCD_ENCODER_DELAY in Configuration.h (e.g. 64).
+//     try to increase the delay LCD_ENC_DELAY in Configuration.h (e.g. 64).
 //
 //
 // ------------------------------------

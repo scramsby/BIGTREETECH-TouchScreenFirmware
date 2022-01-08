@@ -18,8 +18,9 @@ extern "C" {
   #define LARGE_FONT_SIZE           0x3000
   #define _8X16_FONT_SIZE           0x1000
   #define FLASH_SIGN_SIZE           0x1000  // store status of last font/icon/config update
-  #define LANGUAGE_SIZE            0x14000  // Language pack size
-  #define STRINGS_STORE_MAX_SIZE    0x5000  // label strings max size
+  #define LANGUAGE_SIZE            0x15000  // Language pack size
+  #define STRINGS_STORE_MAX_SIZE    0x1000  // label strings max size
+  #define PREHEAT_STORE_MAX_SIZE    0x1000  // preheat setting max size
   #define PRINT_GCODES_MAX_SIZE     0x5000  // start/end/cancel gcodes  max size
   #define CUSTOM_GCODE_MAX_SIZE     0x5000  // custom gocdes max size
   #define ICON_MAX_SIZE             0x5000
@@ -37,7 +38,8 @@ extern "C" {
 #define FLASH_SIGN_ADDR         (_8X16_FONT_ADDR + _8X16_FONT_SIZE)            // for language label strings from language file
 #define LANGUAGE_ADDR           (FLASH_SIGN_ADDR + FLASH_SIGN_SIZE)            // for label strings from config file
 #define STRINGS_STORE_ADDR      (LANGUAGE_ADDR + LANGUAGE_SIZE)                // for label strings from config file
-#define PRINT_GCODES_ADDR       (STRINGS_STORE_ADDR + STRINGS_STORE_MAX_SIZE)  // for start/end/cancel gcodes from config file
+#define PREHEAT_STORE_ADDR      (STRINGS_STORE_ADDR + STRINGS_STORE_MAX_SIZE)  // for preheat settings from config file
+#define PRINT_GCODES_ADDR       (PREHEAT_STORE_ADDR + PREHEAT_STORE_MAX_SIZE)  // for start/end/cancel gcodes from config file
 #define CUSTOM_GCODE_ADDR       (PRINT_GCODES_ADDR + PRINT_GCODES_MAX_SIZE)    // for custom gcodes from config file
 
 #define ICON_ADDR(num)          ((num) * ICON_MAX_SIZE + CUSTOM_GCODE_ADDR + CUSTOM_GCODE_MAX_SIZE)
@@ -46,8 +48,14 @@ extern "C" {
 #define SMALL_ICON_ADDR(num)    ((num) * SMALL_ICON_MAX_SIZE + SMALL_ICON_START_ADDR)
 #define FLASH_USED              (INFOBOX_ADDR + INFOBOX_MAX_SIZE)              // currently small icons are not used
 
+#ifdef PORTRAIT_MODE
+  #define STR_PORTRAIT STRINGIFY(PORTRAIT_MODE)
+#else
+  #define STR_PORTRAIT
+#endif
+
 #define ADMIN_MODE_FILE "admin.txt"
-#define FIRMWARE_NAME STRINGIFY(HARDWARE) "." STRINGIFY(SOFTWARE_VERSION)
+#define FIRMWARE_NAME STRINGIFY(HARDWARE) "." STRINGIFY(SOFTWARE_VERSION) STR_PORTRAIT
 #define FIRMWARE_NAME_SHORT STRINGIFY(HARDWARE_SHORT) STRINGIFY(SOFTWARE_VERSION_SHORT)
 #define BMP_ROOT_DIR "0:" ROOT_DIR "/bmp"
 #define FONT_ROOT_DIR "0:" ROOT_DIR "/font"
@@ -57,26 +65,26 @@ extern "C" {
 enum
 {
   #define X_ICON(NAME) ICON_##NAME ,
-  #include "icon_list.inc"
-  #undef  X_ICON
+    #include "icon_list.inc"
+  #undef X_ICON
   // add new icons in icon_list.inc only
   //ICON_RESERVE
 
-  // Preview should be in the last place before ICON_BACKGROUND to save flash storage space
+  // Preview should be in the last place before ICON_NULL to save flash storage space
   ICON_PREVIEW,
   // Back ground sign
-  ICON_BACKGROUND
+  ICON_NULL
 };
 
 // This List is Auto-Generated. Please add new icons in small_icon_list.inc only
 enum
 {
   #define X_SMALLICON(NAME) SMALL_ICON_##NAME ,
-  #include "small_icon_list.inc"
-  #undef  X_SMALLICON
+    #include "small_icon_list.inc"
+  #undef X_SMALLICON
   // add new icons in small_icon_list.inc only
   // Back ground sign
-  SMALL_ICON_BACKGROUND
+  SMALL_ICON_NULL
 };
 
 typedef enum

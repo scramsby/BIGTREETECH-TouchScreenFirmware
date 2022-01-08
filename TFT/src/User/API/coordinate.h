@@ -28,11 +28,11 @@ typedef struct
   float coordinate;
   uint32_t feedrate;
   bool relative;
-  bool backedUp;
+  bool handled;
 } E_AXIS_BACKUP;
 
 extern const char axis_id[TOTAL_AXIS];
-E_AXIS_BACKUP eAxisBackup;
+extern E_AXIS_BACKUP eAxisBackup;
 
 bool coorGetRelative(void);
 void coorSetRelative(bool mode);

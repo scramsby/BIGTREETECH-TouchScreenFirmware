@@ -4,10 +4,13 @@
 typedef struct
 {
   FIL        file;
+  uint32_t   size;                // gcode file total size
+  uint32_t   cur;                 // gcode file printed size
+  uint32_t   expectedTime;        // expected print duration in sec
   uint32_t   time;                // current elapsed time in sec
   uint32_t   remainingTime;       // current remaining time in sec (if set with M73 or M117)
-  uint32_t   size;                // Gcode file total size
-  uint32_t   cur;                 // Gcode has printed file size
+  uint16_t   layerNumber;
+  uint16_t   layerCount;
   uint8_t    prevProgress;
   uint8_t    progress;
   bool       progressFromSlicer;  // 1: progress controlled by Slicer (if set with M73)
@@ -21,12 +24,18 @@ PRINTING infoPrinting;
 PRINT_SUMMARY infoPrintSummary = {.name[0] = '\0', 0, 0, 0, 0};
 
 static bool updateM27_waiting = false;
+static bool extrusionDuringPause = false;  // flag for extrusion during Print -> Pause
 static float last_E_pos;
 bool filamentRunoutAlarm;
 
+void setExtrusionDuringPause(bool extruded)
+{
+  extrusionDuringPause = extruded;
+}
+
 bool isHostPrinting(void)
 {
-  return (infoHost.printing);
+  return infoHost.printing;
 }
 
 void setRunoutAlarmTrue(void)
@@ -65,6 +74,16 @@ void resumeAndContinue(void)
   Serial_Puts(SERIAL_PORT, "M876 S1\n");
 }
 
+void setPrintExpectedTime(uint32_t expectedTime)
+{
+  infoPrinting.expectedTime = expectedTime;
+}
+
+uint32_t getPrintExpectedTime(void)
+{
+  return infoPrinting.expectedTime;
+}
+
 void setPrintTime(uint32_t elapsedTime)
 {
   if (elapsedTime % 1000 == 0)
@@ -95,7 +114,7 @@ void setPrintRemainingTime(int32_t remainingTime)
 {
   float speedFactor = (float) (speedGetCurPercent(0)) / 100;  // speed (feed rate) factor (e.g. 50% -> 0.5)
 
-  // Cura Slicer put a negative value at the end instead of zero
+  // Cura slicer put a negative value at the end instead of zero
   if (remainingTime < 0 || speedFactor <= 0.0f)
     remainingTime = 0;
   else
@@ -122,6 +141,26 @@ void getPrintRemainingTimeDetail(uint8_t * hour, uint8_t * min, uint8_t * sec)
   *hour = infoPrinting.remainingTime / 3600;
   *min = infoPrinting.remainingTime % 3600 / 60;
   *sec = infoPrinting.remainingTime % 60;
+}
+
+void setPrintLayerNumber(uint16_t layerNumber)
+{
+  infoPrinting.layerNumber = layerNumber;
+}
+
+uint16_t getPrintLayerNumber()
+{
+  return infoPrinting.layerNumber;
+}
+
+void setPrintLayerCount(uint16_t layerCount)
+{
+  infoPrinting.layerCount = layerCount;
+}
+
+uint16_t getPrintLayerCount()
+{
+  return infoPrinting.layerCount;
 }
 
 uint32_t getPrintSize(void)
@@ -203,7 +242,7 @@ void shutdownLoop(void)
 
   for (uint8_t i = NOZZLE0; i < infoSettings.hotend_count; i++)
   {
-    if (heatGetCurrentTemp(i) >= AUTO_SHUT_DOWN_MAXTEMP)
+    if (heatGetCurrentTemp(i) >= infoSettings.auto_shutdown_temp)
       tempIsLower = false;
   }
 
@@ -218,7 +257,7 @@ void shutdownStart(void)
   char tempstr[75];
 
   LABELCHAR(tempbody, LABEL_WAIT_TEMP_SHUT_DOWN);
-  sprintf(tempstr, tempbody, infoSettings.auto_off_temp);
+  sprintf(tempstr, tempbody, infoSettings.auto_shutdown_temp);
 
   for (uint8_t i = 0; i < infoSettings.fan_count; i++)
   {
@@ -238,8 +277,8 @@ void initPrintSummary(void)
 
 void preparePrintSummary(void)
 {
-  if (infoMachineSettings.long_filename_support == ENABLED && infoFile.source == BOARD_SD)
-    sprintf(infoPrintSummary.name,"%." STRINGIFY(SUMMARY_NAME_LEN) "s", infoFile.Longfile[infoFile.fileIndex]);
+  if (infoMachineSettings.longFilename == ENABLED && infoFile.source == BOARD_SD)
+    sprintf(infoPrintSummary.name,"%." STRINGIFY(SUMMARY_NAME_LEN) "s", infoFile.longFile[infoFile.fileIndex]);
   else
     sprintf(infoPrintSummary.name,"%." STRINGIFY(SUMMARY_NAME_LEN) "s", getPrintName(infoFile.title));
 
@@ -316,22 +355,65 @@ void clearInfoPrint(void)
   ExitDir();
 }
 
-static inline void printRemoteStart(void)
+void printComplete(void)
 {
-  infoFile.source = BOARD_SD_REMOTE;  // avoid BOARD_SD be parsed as BOARD_SD_REMOTE in parseACK.c
+  infoPrinting.cur = infoPrinting.size;  // always update the print progress to 100% even if the print terminated
+  infoPrinting.printing = infoPrinting.pause = false;
+  setPrintRemainingTime(0);
+  preparePrintSummary();  // update print summary. infoPrinting are used
+
+  switch (infoFile.source)
+  {
+    case REMOTE_HOST:
+      infoHost.printing = false;
+      break;
+
+    case BOARD_SD_REMOTE:
+    case BOARD_SD:
+      infoHost.printing = false;
+      request_M27(0);
+      coordinateQuery(0);  // disable auto report position
+      break;
+
+    case TFT_UDISK:
+    case TFT_SD:
+      f_close(&infoPrinting.file);
+      powerFailedClose();   // close Power-loss Recovery file
+      powerFailedDelete();  // delete Power-loss Recovery file
+      break;
+  }
+
+  heatClearIsWaiting();
+}
+
+void printRemoteStart(const char * filename)
+{
+  infoHost.printing = true;  // always set (even if printing from onboard SD)
+
+  if (infoPrinting.printing && infoFile.source <= BOARD_SD) return;  // if printing from TFT or onboard SD
 
   // always clean infoPrinting first and then set the needed attributes
   memset(&infoPrinting, 0, sizeof(PRINTING));
 
   // we assume infoPrinting is clean, so we need to set only the needed attributes
-  infoPrinting.size = 1;  // .size should be different with .cur to avoid 100% progress on TFT, Get the correct value by M27
+  infoPrinting.size = 1;  // .size must be different than .cur to avoid 100% progress on TFT
   infoPrinting.printing = true;
-
-  request_M27(infoSettings.m27_refresh_time);  // check if there is a print running from onboard SD or remote host (USB)
   initPrintSummary();  // init print summary
 
-  infoMenu.cur = 1;  // Clear menu buffer when printing menu is active by remote
-  infoMenu.menu[infoMenu.cur] = menuPrinting;
+  if (filename != NULL)
+  {
+    strcpy(infoFile.title, filename);
+    infoFile.source = BOARD_SD_REMOTE;
+    request_M27(infoSettings.m27_refresh_time);  // use gcode M27 in case of a print running from remote onboard SD
+  }
+  else
+  {
+    strcpy(infoFile.title, "Remote printing...");
+    infoFile.source = REMOTE_HOST;
+  }
+
+  infoMenu.cur = 1;  // clear menu buffer when printing menu is active by remote
+  REPLACE_MENU(menuPrinting);
 }
 
 void printStart(FIL * file, uint32_t size)
@@ -342,67 +424,59 @@ void printStart(FIL * file, uint32_t size)
   // we assume infoPrinting is clean, so we need to set only the needed attributes
   infoPrinting.size = size;
   infoPrinting.printing = true;
+  initPrintSummary();  // init print summary
+
+  if (GET_BIT(infoSettings.send_gcodes, SEND_GCODES_START_PRINT))
+  {
+    sendPrintCodes(0);
+  }
 
   switch (infoFile.source)
   {
-    case BOARD_SD_REMOTE:  // present just to make the code robust. It should never been executed
+    case REMOTE_HOST:      // present just to make the code robust. It should never be executed
+    case BOARD_SD_REMOTE:
+      return;
+
     case BOARD_SD:
-      //infoHost.printing = true;  // Not so fast! Let Marlin tell that he's done!
-      request_M27(infoSettings.m27_refresh_time);  // check if there is a print running from onboard SD or remote host (USB)
+      //infoHost.printing = true;                  // Not so fast! Let Marlin tell that he started printing!
+      request_M24(0);                              // start print from onboard SD
+      request_M27(infoSettings.m27_refresh_time);  // use gcode M27 in case of a print running from onboard SD
       break;
 
     case TFT_UDISK:
     case TFT_SD:
       infoPrinting.file = *file;
       infoPrinting.cur = infoPrinting.file.fptr;
-
-      if (infoSettings.send_start_gcode == 1 && infoPrinting.cur == 0)  // PLR continue printing, CAN NOT use start gcode
-      {
-        sendPrintCodes(0);
-      }
+      setExtrusionDuringPause(false);
       break;
   }
-
-  initPrintSummary();  // init print summary
 }
 
 void printEnd(void)
 {
+  if (!infoPrinting.printing) return;
+
   switch (infoFile.source)
   {
+    case REMOTE_HOST:  // nothing to do
     case BOARD_SD_REMOTE:
-    case BOARD_SD:
-      request_M27(0);
-      coordinateQuery(0);  // disable auto report position
       break;
 
+    case BOARD_SD:
     case TFT_UDISK:
     case TFT_SD:
-      f_close(&infoPrinting.file);
+      if (GET_BIT(infoSettings.send_gcodes, SEND_GCODES_END_PRINT))
+      {
+        sendPrintCodes(1);
+      }
+
       break;
   }
 
-  powerFailedClose();
-  powerFailedDelete();
+  BUZZER_PLAY(SOUND_SUCCESS);
+  printComplete();
 
-  infoPrinting.cur = infoPrinting.size;  // always update the print progress to 100% even if the print terminated
-  infoPrinting.printing = infoPrinting.pause = false;
-  preparePrintSummary();  // update print summary. infoPrinting are used
-
-  if (infoSettings.send_end_gcode == 1)
-  {
-    sendPrintCodes(1);
-  }
-
-  heatClearIsWaiting();
-}
-
-void printComplete(void)
-{
-  BUZZER_PLAY(sound_success);
-  printEnd();
-
-  if (infoSettings.auto_off)  // Auto shut down after print
+  if (infoSettings.auto_shutdown)  // auto shutdown after print
   {
     shutdownStart();
   }
@@ -415,16 +489,19 @@ void printAbort(void)
   static bool loopDetected = false;
 
   if (loopDetected) return;
-
   if (!infoPrinting.printing) return;
 
   switch (infoFile.source)
   {
+    case REMOTE_HOST:  // nothing to do
+      loopDetected = false;
+      return;
+
     case BOARD_SD_REMOTE:
     case BOARD_SD:
       //infoHost.printing = false;  // Not so fast! Let Marlin tell that he's done!
 
-      // Several M108 are sent to Marlin because consecutive blocking operations
+      // several M108 are sent to Marlin because consecutive blocking operations
       // such as heating bed, extruder may defer processing of M524
       breakAndContinue();
       breakAndContinue();
@@ -439,19 +516,20 @@ void printAbort(void)
       {
         if (!infoPrinting.pause)
         {
-          request_M25();  // Must pause the print before cancel it
+          request_M25();  // must pause the print before cancel it
         }
 
-        request_M0();  // M524 is not supportet in reprap firmware
+        request_M0();  // M524 is not supportet in RepRap firmware
       }
 
       if (infoHost.printing)
       {
-        setDialogText(LABEL_SCREEN_INFO, LABEL_BUSY, LABEL_BACKGROUND, LABEL_BACKGROUND);
+        setDialogText(LABEL_SCREEN_INFO, LABEL_BUSY, LABEL_NULL, LABEL_NULL);
         showDialog(DIALOG_TYPE_INFO, NULL, NULL, NULL);
 
         loopProcessToCondition(&isHostPrinting);  // wait for the printer to settle down
       }
+
       break;
 
     case TFT_UDISK:
@@ -460,10 +538,12 @@ void printAbort(void)
       break;
   }
 
-  if (infoSettings.send_cancel_gcode == 1)
+  if (GET_BIT(infoSettings.send_gcodes, SEND_GCODES_CANCEL_PRINT))
+  {
     sendPrintCodes(2);
+  }
 
-  printEnd();
+  printComplete();
   clearInfoPrint();  // finally clear infoPrinting and exit from dir
 
   loopDetected = false;
@@ -475,18 +555,21 @@ bool printPause(bool isPause, PAUSE_TYPE pauseType)
   // the queue infoCmd and the function loopProcess() is invoked by this function
   static bool loopDetected = false;
 
-  if (loopDetected)                  return false;
-  if (!infoPrinting.printing)        return false;
+  if (loopDetected) return false;
+  if (!infoPrinting.printing) return false;
   if (infoPrinting.pause == isPause) return false;
 
   loopDetected = true;
-  infoPrinting.pause = isPause;
 
   switch (infoFile.source)
   {
+    case REMOTE_HOST:  // nothing to do
+      loopDetected = false;
+      return true;
+
     case BOARD_SD_REMOTE:
     case BOARD_SD:
-      if (infoPrinting.pause)
+      if (isPause)
         request_M25();   // pause
       else
         request_M24(0);  // resume
@@ -494,14 +577,14 @@ bool printPause(bool isPause, PAUSE_TYPE pauseType)
 
     case TFT_UDISK:
     case TFT_SD:
-      if (infoPrinting.pause == true && pauseType == PAUSE_M0)
+      if (isPause == true && pauseType == PAUSE_M0)
         loopProcessToCondition(&isNotEmptyCmdQueue);  // wait for the communication to be clean
 
       static COORDINATE tmp;
       bool isCoorRelative = coorGetRelative();
       bool isExtrudeRelative = eGetRelative();
 
-      if (infoPrinting.pause)  // pause
+      if (isPause)  // pause
       {
         // restore status before pause
         // if pause was triggered through M0/M1 then break
@@ -553,8 +636,12 @@ bool printPause(bool isPause, PAUSE_TYPE pauseType)
           if (isCoorRelative == true)    mustStoreCmd("G90\n");
           if (isExtrudeRelative == true) mustStoreCmd("M82\n");
 
-          if (heatGetCurrentTemp(heatGetCurrentHotend()) > infoSettings.min_ext_temp)
-          {
+          if (extrusionDuringPause == true)  // check if extrusion done during Print -> Pause
+          { // no purge
+            extrusionDuringPause = false;
+          }
+          else if (heatGetCurrentTemp(heatGetCurrentHotend()) > infoSettings.min_ext_temp)
+          { // purge
             mustStoreCmd("G1 E%.5f F%d\n", tmp.axis[E_AXIS] - infoSettings.pause_retract_len + infoSettings.resume_purge_len,
                          infoSettings.pause_feedrate[FEEDRATE_E]);
           }
@@ -576,6 +663,7 @@ bool printPause(bool isPause, PAUSE_TYPE pauseType)
       break;
   }
 
+  infoPrinting.pause = isPause;  // update pause status after pause/resume procedure
   loopDetected = false;
 
   return true;
@@ -591,134 +679,181 @@ bool isPaused(void)
   return infoPrinting.pause;
 }
 
-void setPrintHost(bool isPrinting)
+bool isTFTPrinting(void)
 {
-  // global lock info telling the printer is busy in printing
-  // from onboard SD or remote host (e.g. USB)
-  infoHost.printing = isPrinting;
+  return (infoPrinting.printing && infoFile.source < BOARD_SD) ? true : false;
+}
+
+bool isRemoteHostPrinting(void)
+{
+  return (infoPrinting.printing && infoFile.source == REMOTE_HOST) ? true : false;
 }
 
 void setPrintAbort(void)
 {
-  // always reset the flag reporting the host is printing (even if the TFT didn't intercept it yet)
-  // due to no further notifications will be sent by the host to notify it is no more printing
-  infoHost.printing = false;
-
-  // if printing from onboard SD or remote host
-  if (infoPrinting.printing && infoFile.source >= BOARD_SD)
-  {
-    request_M27(0);
-    coordinateQuery(0);
-  }
-
-  infoPrinting.cur = infoPrinting.size;  // always update the print progress to 100% even if the print was abaorted
-  infoPrinting.printing = infoPrinting.pause = false;
+  BUZZER_PLAY(SOUND_ERROR);
+  printComplete();
 }
 
 void setPrintPause(bool updateHost, PAUSE_TYPE pauseType)
 {
+  // pass value "false" for updateHost to let Marlin report (in case of printing from (remote) onboard SD)
+  // when the host is not printing (when notification ack "Not SD printing" is caught).
+  // In case of printing from remote host (e.g. USB) or infoSettings.m27_active set to "false", the host
+  // printing status is always forced to "false" due to no other notification will be received
+
   if (infoPrinting.printing)
   {
     infoPrinting.pause = true;
     infoPrinting.pauseType = pauseType;
   }
 
-  if (updateHost)
+  // in case of printing from remote host or infoSettings.m27_active set to "false", always force to "false"
+  if (updateHost || infoFile.source == REMOTE_HOST || !infoSettings.m27_active)
     infoHost.printing = false;
 }
 
 void setPrintResume(bool updateHost)
 {
-  // no need to check it is printing when setting the value to false
+  // pass value "true" for updateHost to report (in case of printing from (remote) onboard SD) the host is
+  // printing without waiting from Marlin (when notification ack "SD printing byte" is caught).
+  // In case of printing from remote host (e.g. USB) or infoSettings.m27_active set to "false", the host
+  // printing status is always forced to "true" due to no other notification will be received
+
+  // no need to check it is printing when setting the value to "false"
   infoPrinting.pause = false;
 
-  if (updateHost)
+  // in case of printing from remote host or infoSettings.m27_active set to "false", always force to "true"
+  if (updateHost || infoFile.source == REMOTE_HOST || !infoSettings.m27_active)
   {
-    // if printing from onboard SD or remote host
+    // if printing from (remote) onboard SD or remote host
     if (infoPrinting.printing && infoFile.source >= BOARD_SD)
       infoHost.printing = true;
   }
 }
 
-// get gcode command from sd card
+// get gcode command from TFT (SD card or USB stick)
 void loopPrintFromTFT(void)
 {
-  bool    sd_comment_mode = false;
-  bool    sd_comment_space = true;
-  char    sd_char;
-  uint8_t sd_count = 0;
-  UINT    br = 0;
-
-  if (heatHasWaiting() || infoCmd.count || infoPrinting.pause) return;
-
+  if (!infoPrinting.printing) return;
+  if (infoFile.source >= BOARD_SD) return;  // if not printing from TFT
+  if (heatHasWaiting() || isNotEmptyCmdQueue() || infoPrinting.pause) return;
   if (moveCacheToCmd() == true) return;
 
-  if (!infoPrinting.printing || infoFile.source >= BOARD_SD) return;
+  powerFailedCache(infoPrinting.file.fptr);  // update Power-loss Recovery file
 
-  powerFailedCache(infoPrinting.file.fptr);
+  CMD      gcode;
+  uint8_t  gcode_count = 0;
+  uint8_t  comment_count = 0;
+  char     read_char = '0';
+  UINT     br = 0;
+  FIL *    ip_file = &infoPrinting.file;
+  uint32_t ip_cur = infoPrinting.cur;
+  uint32_t ip_size = infoPrinting.size;
 
-  for (; infoPrinting.cur < infoPrinting.size;)
+  for ( ; ip_cur < ip_size; ip_cur++)  // parse only the gcode (not the comment, if any)
   {
-    if (f_read(&infoPrinting.file, &sd_char, 1, &br) != FR_OK) break;
+    if (f_read(ip_file, &read_char, 1, &br) != FR_OK)
+    { // in case of error reading from file, force a print abort
+      ip_cur = ip_size;
+      continue;  // "continue" will force also to execute "ip_cur++" in the "for" statement
+    }
 
-    infoPrinting.cur++;
-
-    // Gcode
-    if (sd_char == '\n' )  // '\n' is end flag for per command
+    if (read_char == '\n' || read_char == ';')  // '\n' is command end flag, ';' is command comment flag
     {
-      sd_comment_mode  = false;  // for new command
-      sd_comment_space = true;
-
-      if (sd_count != 0)
+      if (gcode_count != 0)  // if a gcode was found, finalize and enqueue the gcode and exit from loop
       {
-        infoCmd.queue[infoCmd.index_w].gcode[sd_count++] = '\n';
-        infoCmd.queue[infoCmd.index_w].gcode[sd_count] = 0;  // terminate string
-        infoCmd.queue[infoCmd.index_w].src = SERIAL_PORT;
-        sd_count = 0;  // clear buffer
-        infoCmd.index_w = (infoCmd.index_w + 1) % CMD_MAX_LIST;
-        infoCmd.count++;
+        gcode[gcode_count++] = '\n';
+        gcode[gcode_count] = 0;  // terminate string
+        storeCmdFromUART(PORT_1, gcode);
+
         break;
       }
-    }
-    else if (sd_count >= CMD_MAX_CHAR - 2)
-    {}  // when the command length beyond the maximum, ignore the following bytes
-    else
-    {
-      if (sd_char == ';')  // ';' is comment out flag
-      {
-        sd_comment_mode = true;
-      }
-      else
-      {
-        if (sd_comment_space && (sd_char == 'G' || sd_char == 'M' || sd_char == 'T'))  // ignore ' ' space bytes
-          sd_comment_space = false;
 
-        if (!sd_comment_mode && !sd_comment_space && sd_char != '\r')  // normal gcode
-          infoCmd.queue[infoCmd.index_w].gcode[sd_count++] = sd_char;
+      if (read_char == ';')  // if a comment was found, exit from loop. Otherwise (empty line found), continue parsing the next line
+        break;
+    }
+    else if (read_char == ' ' && gcode_count == 0)  // ignore initial ' ' space bytes
+    {}
+    else if (read_char != '\r')
+    {
+      if (gcode_count < CMD_MAX_SIZE - 2)
+        gcode[gcode_count++] = read_char;
+      else  // if command length is beyond the maximum, skip gcode (avoid to send a truncated gcode) and also further comment, if any
+        break;
+    }
+  }
+
+  if (read_char != '\n')  // continue to parse the line (e.g. comment) until command end flag
+  {
+    // if file comment parsing is enabled and a comment tag was previously intercepted parsing the gcode, enable comment parsing
+    bool comment_parsing = (GET_BIT(infoSettings.general_settings, INDEX_FILE_COMMENT_PARSING) == 1 &&
+                            read_char == ';') ? true : false;
+
+    for ( ; ip_cur < ip_size; ip_cur++)  // continue to parse the line (e.g. comment) until command end flag
+    {
+      if (f_read(ip_file, &read_char, 1, &br) != FR_OK)
+      { // in case of error reading from file, force a print abort
+        ip_cur = ip_size;
+        continue;  // "continue" will force also to execute "ip_cur++" in the "for" statement
+      }
+
+      if (read_char == '\n')  // '\n' is command end flag
+      {
+        if (comment_parsing && comment_count != 0)  // if a comment was found, finalize the comment data structure
+        {
+          gCode_comment.content[comment_count++] = '\n';
+          gCode_comment.content[comment_count] = 0;  // terminate string
+          gCode_comment.handled = false;
+        }
+
+        break;  // line was parsed so always exit from loop
+      }
+      else if (comment_parsing)
+      {
+        if (read_char == ';')  // ';' is command comment flag
+        {
+          comment_count = 0;  // there might be a comment in a commented line. We always consider the last comment
+        }
+        else if (read_char == ' ' && comment_count == 0)  // ignore initial ' ' space bytes
+        {}
+        else if (read_char != '\r')
+        {
+          if (comment_count < COMMENT_MAX_CHAR - 2)
+            gCode_comment.content[comment_count++] = read_char;
+          else  // if comment length is beyond the maximum, skip comment but continue to parse the line until command end flag
+            comment_parsing = false;
+        }
       }
     }
   }
 
-  if (infoPrinting.printing && (infoPrinting.cur >= infoPrinting.size))  // end of .gcode file
+  infoPrinting.cur = ip_cur;  // update infoPrinting.cur with current file position
+
+  if (ip_cur == ip_size)  // in case of end of gcode file, finalize the print
   {
-    printComplete();
+    printEnd();
+  }
+  else if (ip_cur > ip_size)  // in case of print abort (ip_cur == ip_size + 1), display an error message and abort the print
+  {
+    BUZZER_PLAY(SOUND_ERROR);
+    popupReminder(DIALOG_TYPE_ERROR, (infoFile.source == TFT_SD) ? LABEL_READ_TFTSD_ERROR : LABEL_READ_U_DISK_ERROR, LABEL_PROCESS_ABORTED);
+
+    printAbort();
   }
 }
 
-void loopPrintFromHost(void)
+void loopPrintFromOnboardSD(void)
 {
   #ifdef HAS_EMULATOR
-    if (infoMenu.menu[infoMenu.cur] == menuMarlinMode) return;
+    if (MENU_IS(menuMarlinMode)) return;
   #endif
 
-  if (infoHost.printing && !infoPrinting.printing)  // if a print starting form a remote host is intercepted
-  {
-    printRemoteStart();
-  }
-
-  if (infoFile.source < BOARD_SD) return;
+  if (!infoPrinting.printing) return;
+  if (infoFile.source < BOARD_SD || infoFile.source > BOARD_SD_REMOTE) return;  // if not printing from (remote) onboard SD
   if (infoMachineSettings.autoReportSDStatus == ENABLED) return;
-  if (!infoSettings.m27_active && !infoPrinting.printing) return;
+  if (!infoSettings.m27_active) return;
+  if (MENU_IS(menuTerminal)) return;
 
   static uint32_t nextCheckPrintTime = 0;
   uint32_t update_M27_time = infoSettings.m27_refresh_time * 1000;

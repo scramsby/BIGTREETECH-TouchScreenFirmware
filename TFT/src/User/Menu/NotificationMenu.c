@@ -32,7 +32,7 @@ void loadNotificationItems(void)
     }
     else
     {
-      itemlist->items[i].icon = CHARICON_BACKGROUND;
+      itemlist->items[i].icon = CHARICON_NULL;
     }
 
     menuDrawListItem(&itemlist->items[i], i);
@@ -44,16 +44,16 @@ void menuNotification(void)
 {
   LISTITEMS notificationItems = {
     LABEL_NOTIFICATIONS,
-    // icon                 ItemType    Item Title        item value text(only for custom value)
+    // icon            ItemType    Item Title     item value text(only for custom value)
     {
-      {CHARICON_BACKGROUND, LIST_LABEL, LABEL_DYNAMIC,    LABEL_BACKGROUND},
-      {CHARICON_BACKGROUND, LIST_LABEL, LABEL_DYNAMIC,    LABEL_BACKGROUND},
-      {CHARICON_BACKGROUND, LIST_LABEL, LABEL_DYNAMIC,    LABEL_BACKGROUND},
-      {CHARICON_BACKGROUND, LIST_LABEL, LABEL_DYNAMIC,    LABEL_BACKGROUND},
-      {CHARICON_BACKGROUND, LIST_LABEL, LABEL_DYNAMIC,    LABEL_BACKGROUND},
-      {CHARICON_BLANK,      LIST_LABEL, LABEL_CLEAR,      LABEL_BACKGROUND},
-      {CHARICON_BACKGROUND, LIST_LABEL, LABEL_BACKGROUND, LABEL_BACKGROUND},
-      {CHARICON_BACK,       LIST_LABEL, LABEL_BACKGROUND, LABEL_BACKGROUND},
+      {CHARICON_NULL,  LIST_LABEL, LABEL_DYNAMIC, LABEL_NULL},
+      {CHARICON_NULL,  LIST_LABEL, LABEL_DYNAMIC, LABEL_NULL},
+      {CHARICON_NULL,  LIST_LABEL, LABEL_DYNAMIC, LABEL_NULL},
+      {CHARICON_NULL,  LIST_LABEL, LABEL_DYNAMIC, LABEL_NULL},
+      {CHARICON_NULL,  LIST_LABEL, LABEL_DYNAMIC, LABEL_NULL},
+      {CHARICON_BLANK, LIST_LABEL, LABEL_CLEAR,   LABEL_NULL},
+      {CHARICON_NULL,  LIST_LABEL, LABEL_NULL,    LABEL_NULL},
+      {CHARICON_BACK,  LIST_LABEL, LABEL_NULL,    LABEL_NULL},
     }
   };
 
@@ -63,7 +63,7 @@ void menuNotification(void)
   loadNotificationItems();
   setNotificationHandler(loadNotificationItems);
 
-  while (infoMenu.menu[infoMenu.cur] == menuNotification)
+  while (MENU_IS(menuNotification))
   {
     key_num = menuKeyGetValue();
     switch (key_num)
@@ -80,7 +80,7 @@ void menuNotification(void)
         break;
 
       case KEY_ICON_7:
-        infoMenu.cur--;
+        CLOSE_MENU();
         break;
 
       default:

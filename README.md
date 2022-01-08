@@ -48,10 +48,12 @@ Important information related to BigTreeTech's TFT touchscreen 3D printer contro
 
 - [Appendix](#appendix)
 
+  - [Integration with Octoprint](#integration-with-octoprint)
+  - [Embedded Gcode Thumbnails](#embedded-gcode-thumbnails)
   - [TFT Screen Configuration and support for RRF](#tft-screen-configuration-and-support-for-rrf)
   - [Setup of BTT TFT35 E3 V3 with MKS SGEN L Mainboards](#setup-of-btt-tft35-e3-v3-with-mks-sgen-l-mainboards)
   - [Show more statistics at the end of the print](#show-more-statistics-at-the-end-of-the-print)
-
+  
   
 
 
@@ -99,6 +101,8 @@ In order the TFT firmware is able to provide all of its functionalities/features
 **General options which MUST be activated:**
 
 `EEPROM_SETTINGS` (in Configuration.h)
+
+`BABYSTEPPING` (in Configuration_adv.h)
 
 `AUTO_REPORT_TEMPERATURES` (in Configuration_adv.h)
 
@@ -148,19 +152,11 @@ In order the TFT firmware is able to provide all of its functionalities/features
 
 
 
-**Options to support Babystep menu:**
-
-`BABYSTEPPING` (in Configuration_adv.h)
-
-
-
-**Options to support repeatability test to test probe accuracy (M48):**
+**Options to fully support Bed Leveling menu:**
 
 `Z_MIN_PROBE_REPEATABILITY_TEST` (in Configuration.h)
 
-
-
-**Options to support alignment of multiple Z steppers using a bed probe (G34):**
+`G26_MESH_VALIDATION (in Configuration.h)` (in Configuration.h)
 
 `Z_STEPPER_AUTO_ALIGN` (in Configuration_adv.h)
 
@@ -186,7 +182,9 @@ B: In case your mainboard provides **EXP1 and EXP2**, you have to connect 2 ribb
 
 C: In case you have an **"E3" mainboard** which provides a **single EXP connector**, you have to connect 1 ribbon cable connecting EXP of the mainboard to **EXP3** of the TFT. In case your TFT does **not** provide an EXP3 connector but only two 10pin connectors (TFT24 v1.1 for example) you will need a "Y-split" cable with one 10pin connector on one side (for the mainboard) and two 10pin connectors on the other side (for the TFT). In the Marlin firmware of your mainboard, make sure that **ONLY** the "`CR10_STOCKDISPLAY`" is activated in Configuration.h and that all other controllers are **De**activated (especially the "`REPRAP_DISCOUNT_FULL_GRAPHIC_SMART_CONTROLLER`").
 
-![Thomas White May 2021](https://user-images.githubusercontent.com/54359396/120190324-bcf35780-c218-11eb-8f31-b50175839156.png)
+![Thomas White July 2021-1](https://user-images.githubusercontent.com/54359396/132397091-d596abcf-750f-422a-bb59-afafc246dc58.jpg)
+![Thomas White July 2021-2](https://user-images.githubusercontent.com/54359396/132397098-136247da-c11e-4783-a163-4147a73094e1.jpg)
+![Thomas White July 2021-3](https://user-images.githubusercontent.com/54359396/132397106-57d8b5c5-715a-4748-8d80-60eaac76477f.jpg)
 
 
 
@@ -196,8 +194,6 @@ C: In case you have an **"E3" mainboard** which provides a **single EXP connecto
 | :----------------------------------------------------------: | :----------------------------------------------------------: |
 | ![status screen 0](https://user-images.githubusercontent.com/54359396/103319145-09035b80-4a31-11eb-91d0-dd761a48b6f5.png) | ![Unified Material Main Screen](https://user-images.githubusercontent.com/54359396/98742038-03cd4d00-23ae-11eb-9552-36dc02fe66f4.png) |
 | In config.ini define: General Settings<br/>Enable Status Screen<br/># Select the Main Screen flavour<br/># Options: [Enable: 1, Disable: 0]<br/>**status_screen: 0** | In config.ini define: General Settings<br/>Enable Status Screen<br/># Select the Main Screen flavour<br/># Options: [Enable: 1, Disable: 0]<br/>**status_screen: 1** |
-
-
 
 
 
@@ -213,7 +209,10 @@ C: In case you have an **"E3" mainboard** which provides a **single EXP connecto
 | ![Hybrid Red Menu Material Mainscreen](https://user-images.githubusercontent.com/54359396/98869176-a995c000-2471-11eb-94da-a0bc41abf3e9.png) | ![Monochrome TFT35](https://user-images.githubusercontent.com/54359396/110254523-d5dccb80-7f8f-11eb-86a5-2d52ecd7ca4d.png) |
 | Use firmware, icons, and fonts from the [`Copy to SD Card root directory to update - Hybrid Red Menu Material theme`](https://github.com/bigtreetech/BIGTREETECH-TouchScreenFirmware/tree/master/Copy%20to%20SD%20Card%20root%20directory%20to%20update/THEME_Hybrid%20Red%20Menu%20Material%20theme) folder | Use firmware, icons, and fonts from the [`Copy to SD Card root directory to update - Hybrid Mono Menu Material theme`](https://github.com/bigtreetech/BIGTREETECH-TouchScreenFirmware/tree/master/Copy%20to%20SD%20Card%20root%20directory%20to%20update/THEME_Hybrid%20Mono%20Menu%20Material%20theme) folder |
 
-
+| Rep Rap Firmware Dark  Theme by **[xPew](https://github.com/xPew)** |                                                              |
+| :----------------------------------------------------------: | ------------------------------------------------------------ |
+| ![Mainscreen-Rep Rap FW Dark](https://user-images.githubusercontent.com/54359396/132403911-067d5cba-942e-496a-9f24-c4b1c9be99d5.png) | ![Mainscreen](https://user-images.githubusercontent.com/54359396/132404369-948e7677-6d17-4a9a-ad7e-25ebc46b3fdb.png) |
+| Use firmware, icons, and fonts from the [`Copy to SD Card root directory to update - Rep Rap Firmware Dark theme`](https://github.com/bigtreetech/BIGTREETECH-TouchScreenFirmware/tree/master/Copy%20to%20SD%20Card%20root%20directory%20to%20update/THEME_Rep%20Rap%20Firmware%20Dark%20theme) folder |                                                              |
 
 
 
@@ -371,6 +370,7 @@ See [Customisation guides](https://github.com/bigtreetech/BIGTREETECH-TouchScree
 ;MKS_TFT32_V1_4_NOBL
 ;MKS_TFT28_V3_0
 ;MKS_TFT28_V4_0
+;MKS_TFT28_NEW_GENIUS
 [platformio]
 src_dir      = TFT
 boards_dir   = buildroot/boards
@@ -409,52 +409,112 @@ See [BIGTREETECH-TouchScreenFirmware/releases](https://github.com/bigtreetech/BI
 
 
 
-
-
 ## Appendix
+
+### Integration with Octoprint
+
+Octoprint can optionally trigger some actions to the TFT sending specific gcodes. The following actions and the related triggering gcodes are currently supported by the TFT fw:
+
+**start:**
+M118 A1 P0 action:print_start
+  
+**end:**
+M118 A1 P0 action:print_end
+  
+**cancel:**
+M118 A1 P0 action:cancel
+  
+**pause:**
+M118 A1 P0 action:pause
+  
+**resume:**
+M118 A1 P0 action:resume
+  
+**time remaining progress:**
+M118 A1 P0 action:notification Time Left hms (e.g. 02h04m06s)
+  
+M117 Time Left hms
+**file data progress:**
+  
+M118 A1 P0 action:notification Data Left / (e.g. 123/12345)
+M117 Data Left /
+
+When the trigger "print_start" is received, the TFT switches to Printing menu.
+Once on Printing menu, the "pause", "resume" and "stop" buttons on the menu will be disabled.
+That means only Octoprint will control the print.
+Only on print end or cancel the TFT Printing menu is finalized (statistics available etc...) and unlocked (it can be closed).
+
+**NOTE:** A new plugin on Octoprint implementing the above protocol should be the preferable way (available to everyone)
+
+
+
+### Embedded Gcode Thumbnails
+
+The TFT is able to display embedded gcode thumbnails in the file list viewer using two different flavors: Bigtreetech-style or PrusaSlicer-style.
+
+![ps-thumbnail](https://user-images.githubusercontent.com/54359396/121322884-a4b5c380-c90f-11eb-9380-09757d57d84e.png)
+
+The first type is to store the thumbnails at a specific location in the gcode file using a dedicated Cura plugin or external post-processing script.
+The thumbnail's image data is raw encoded in a format which can be displayed on the TFT without any complex image transformations.
+Displaying these embedded thumbnails at the TFT is the fastest approach and suitable for all different BigTreeTech's TFT variants.
+Downside is that you either need a dedicated plugin, for example the [BTT 3D Plug-In Suit](https://github.com/bigtreetech/Bigtree3DPluginSuit), or you have to use the post-processing script.
+
+The other type is to store the thumbnails using dedicated comments (`thumbnail begin...` and `thumbnail end`) which is implemented in stock by some slicers like Prusa-Slicer.
+The thumbnail's image data is a PNG file encoded in Base64 which cannot be displayed directly on the TFT:
+A base64 decoding and png decoding needs to be performed which is quite complex for the TFT.
+Displaying these thumbnails is slower but more flexible.
+Due to the memory requirements it is not suitable for all the different TFT variants (only for those with `RAM_SIZE > 96`).
+
+Thumbnail generation needs to be specifically enabled in Prusa-Slicer.
+Under _Printer Settings_ at the _G-code thumbnails_ settings you have to enter the specific required thumbnail image size for your TFT.
+
+![ps-thumbnail-settings](https://user-images.githubusercontent.com/54359396/121322977-b9925700-c90f-11eb-9a6a-bcebd8f21542.png)
+
+Thumbnail image sizes are:
+
+* `70x70`: TFT24 / TFT28
+* `95x80`: TFT43 / TFT50
+* `95x95`: TFT35
+* `160x140`: TFT70
+
+If this setting is not visible within the Prusa-Slicer you need to enable _Expert Settings Mode_:
+![ps-expert-settings](https://user-images.githubusercontent.com/54359396/121323041-c7e07300-c90f-11eb-9644-e12e31f7b5f9.png)
+
+
+
 ### TFT Screen Configuration and support for RRF
 
-Overview
+**Overview:**
+
 The most recent version of the standard bigtreetech TFT firmware has built in support for RepRapFirmware. The pre-built images have this enabled by default.
 
-Loading the firmware
+**Loading the firmware:**
+
 There is now an RRF config.ini
 It needs to be renamed from config_rrf.ini to config.ini for flashing of the firmware.
 
-Config.g Changes
+**Config.g Changes:**
+
 Add the following line to your config.g to enable the screen: M575 P1 S2 B57600
 
-Start.g Changes
-Add the following line in your start.g file to allow the screen to know when a job has started.
-M409 K"job.file.fileName"
-
-Stop.g Changes
-Add the following line in your stop.g file to allow the screen to know when a job has stopped.
-M118 P2 S"//action:cancel"
-M0 also need to be added to your stop gcode in your slicer to allow stop.g to be ran.
-
-Pause.g Changes
-Add the following line in your pause.g file to allow the screen to know when a job has been aused.
-M118 P2 S"//action::paused"
-
-Cancel.g Changes
-Add the following line in your cancel.g file to allow the screen to know when a job has been cancelled.
-M118 P2 S"//action::prompt_begin Resuming"
-
-Implemented features:
+**Implemented features:**
 
 Auto detect fw type + separate config.ini for easier setup
 -Temperature/movement/cooling status monitoring and control
+
 - Print status monitoring with mid-print tuneing/pausing
 - Macro support
 - Print from onboard/external SD card
-- Please see [Feature request #1791](https://github.com/bigtreetech/BIGTREETECH-TouchScreenFirmware/issues/1791) for more information.
+- Please see [RRF further tweaks #2278](https://github.com/bigtreetech/BIGTREETECH-TouchScreenFirmware/issues/2278) for more information.
 
-Menu system for macros
+**Menu system for macros:**
+
 - Thumbnail and menu system support for onboard gcodes
 - Load/unload menu
 - PID tune menu
 
+  
+  
 ### Setup of BTT TFT35 E3 V3 with MKS SGEN L Mainboards
 
 The following mainboards are covered by this document.

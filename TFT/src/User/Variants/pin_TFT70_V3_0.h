@@ -1,22 +1,40 @@
-#ifndef _PIN_TFT70_V3_0_H_ // modify to actual filename !!!
-#define _PIN_TFT70_V3_0_H_ // modify to actual filename !!!
+#ifndef _PIN_TFT70_V3_0_H_  // modify to actual filename !!!
+#define _PIN_TFT70_V3_0_H_  // modify to actual filename !!!
 
 // MCU type (STM32F10x, STM32F2xx, STM32F4xx)
 #include "stm32f4xx.h"
 
+//#undef PORTRAIT_MODE  // comment this line in case the TFT variant supports Portrait Mode
+
 // LCD resolution, font and icon size
 #ifndef TFT_RESOLUTION
   #define TFT_RESOLUTION
-  #include "./Resolution/TFT_800X480.h"
+  #ifdef PORTRAIT_MODE
+    #undef TFT70_V3_0  // if Portrait Mode, undefine TFT70_V3 in order to apply standard layout on Printing and Status Screen menus
+
+    #include "./Resolution/TFT_480X800.h"
+  #else
+    #include "./Resolution/TFT_800X480.h"
+  #endif
 #endif
 
 #ifndef ROOT_DIR
   #define ROOT_DIR "TFT70"
 #endif
 
+// Hardware manufacturer
+#ifndef HARDWARE_MANUFACTURER
+  #define HARDWARE_MANUFACTURER "BIGTREETECH_"
+#endif
+
 // Hardware version config
 #ifndef HARDWARE_VERSION
   #define HARDWARE_VERSION "TFT70_V3.0"
+#endif
+
+// Software manufacturer
+#ifndef SOFTWARE_MANUFACTURER
+  #define SOFTWARE_MANUFACTURER HARDWARE_VERSION"."
 #endif
 
 // LCD interface
@@ -59,8 +77,8 @@
 #define SERIAL_PORT_3 _USART3
 #define SERIAL_PORT_4 _UART4
 
-// Serial port for debugging Serial communications
-#ifdef DEBUG_SERIAL_COMM
+// Serial port for debugging
+#ifdef SERIAL_DEBUG_ENABLED
   #define SERIAL_DEBUG_PORT SERIAL_PORT_3
 #endif
 

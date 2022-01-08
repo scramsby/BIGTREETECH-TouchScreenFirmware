@@ -1,6 +1,6 @@
 #include "GUI.h"
 #include "includes.h"
-#include "math.h"
+#include <math.h>
 
 uint16_t foreGroundColor = WHITE;
 uint16_t backGroundColor = BLACK;
@@ -615,23 +615,66 @@ void GUI_DispOne(int16_t sx, int16_t sy, const CHAR_INFO *pInfo)
 
   W25Qxx_ReadBuffer(font, pInfo->bitMapAddr, bitMapSize);
 
-  for (x=0; x < pInfo->pixelWidth; x++)
+  if (guiTextMode == GUI_TEXTMODE_TRANS)
   {
-    for (j=0; j < (pInfo->pixelHeight + 8-1)/8; j++)
+    for (x=0; x < pInfo->pixelWidth; x++)
     {
-      temp <<= 8;
-      temp |= font[i++];
-    }
+      for (j=0; j < (pInfo->pixelHeight + 8-1)/8; j++)
+      {
+        temp <<= 8;
+        temp |= font[i++];
+      }
 
-    for (y=0;y < pInfo->pixelHeight;y++)
-    {
-      if (temp & (1<<(pInfo->pixelHeight-1)))
-        GUI_DrawPixel(sx, sy+y, foreGroundColor);
-      else if (guiTextMode == GUI_TEXTMODE_NORMAL)
-        GUI_DrawPixel(sx, sy+y, backGroundColor);
-      temp <<= 1;
+      for (y=0;y < pInfo->pixelHeight;y++)
+      {
+        if (temp & (1<<(pInfo->pixelHeight-1)))
+          GUI_DrawPixel(sx, sy+y, foreGroundColor);
+        temp <<= 1;
+      }
+      sx++;
     }
-    sx++;
+  }
+  else if (guiTextMode == GUI_TEXTMODE_NORMAL)
+  {
+    for (x=0; x < pInfo->pixelWidth; x++)
+    {
+      for (j=0; j < (pInfo->pixelHeight + 8-1)/8; j++)
+      {
+        temp <<= 8;
+        temp |= font[i++];
+      }
+
+      for (y=0;y < pInfo->pixelHeight;y++)
+      {
+        if (temp & (1<<(pInfo->pixelHeight-1)))
+          GUI_DrawPixel(sx, sy+y, foreGroundColor);
+        else
+          GUI_DrawPixel(sx, sy+y, backGroundColor);
+        temp <<= 1;
+      }
+      sx++;
+    }
+  }
+  else  // GUI_TEXTMODE_ON_ICON
+  {
+    for (x=0; x < pInfo->pixelWidth; x++)
+    {
+      for (j=0; j < (pInfo->pixelHeight + 8-1)/8; j++)
+      {
+        temp <<= 8;
+        temp |= font[i++];
+      }
+
+      for (y=0;y < pInfo->pixelHeight;y++)
+      {
+        if (temp & (1<<(pInfo->pixelHeight-1)))
+          GUI_DrawPixel(sx, sy+y, foreGroundColor);
+        else
+          GUI_DrawPixel(sx, sy+y, ICON_ReadPixel(sx, sy+y));
+        temp <<= 1;
+      }
+      sx++;
+    }
   }
 }
 
@@ -1098,7 +1141,7 @@ void Scroll_DispString(SCROLL * para, uint8_t align)
       }
       case CENTER:
       {
-        uint16_t x_offset=((para->rect.x1 - para->rect.x0 - para->totalPixelWidth) >>1);
+        uint16_t x_offset=((para->rect.x1 - para->rect.x0 - para->totalPixelWidth) >> 1);
         GUI_DispString(para->rect.x0+x_offset, para->rect.y0, para->text);
         break;
       }

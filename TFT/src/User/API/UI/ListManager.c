@@ -66,7 +66,7 @@ uint8_t listViewGetCurPage(void)
 // display page at selected index
 void listViewSetCurPage(uint8_t curPage)
 {
-  if(action_preparePage != NULL)
+  if (action_preparePage != NULL)
   {
     action_preparePage(&listItems, curPage);
   }
@@ -86,15 +86,15 @@ void listViewSetCurPage(uint8_t curPage)
       }
       else
       {
-        listItems.items[i].icon = CHARICON_BACKGROUND;
+        listItems.items[i].icon = CHARICON_NULL;
       }
     }
   }
 
   // only 1 page or in first page, hide up button
-  listItems.items[5].icon = ((maxItemCount <= LISTITEM_PER_PAGE) || (curPage == 0)) ? CHARICON_BACKGROUND : CHARICON_PAGEUP;
+  listItems.items[5].icon = ((maxItemCount <= LISTITEM_PER_PAGE) || (curPage == 0)) ? CHARICON_NULL : CHARICON_PAGEUP;
   // only 1 page or in last page, hide down button
-  listItems.items[6].icon = ((maxItemCount <= LISTITEM_PER_PAGE) || (curPage == maxPageCount - 1)) ? CHARICON_BACKGROUND : CHARICON_PAGEDOWN;
+  listItems.items[6].icon = ((maxItemCount <= LISTITEM_PER_PAGE) || (curPage == maxPageCount - 1)) ? CHARICON_NULL : CHARICON_PAGEDOWN;
 
   listItems.items[7].icon = CHARICON_BACK;
 
@@ -166,7 +166,7 @@ void listViewRefreshItem(uint16_t item)
   }
   else
   {
-    listItems.items[cur_i].icon = CHARICON_BACKGROUND;
+    listItems.items[cur_i].icon = CHARICON_NULL;
   }
   menuDrawListItem(&listItems.items[cur_i], cur_i);
 }
@@ -179,11 +179,11 @@ uint16_t listViewGetSelectedIndex(void)
   if (key_num < LISTITEM_PER_PAGE)
   {
     // return actual item index
-    uint8_t cur_index = curPageIndex * LISTITEM_PER_PAGE + key_num;
+    uint16_t cur_index = curPageIndex * LISTITEM_PER_PAGE + key_num;
 
     if (cur_index < maxItemCount)
     {
-      if (totalItems[cur_index].icon != CHARICON_BACKGROUND)
+      if (totalItems[cur_index].icon != CHARICON_NULL)
         return cur_index;
       else
         return KEY_IDLE;
@@ -193,20 +193,22 @@ uint16_t listViewGetSelectedIndex(void)
   // check function keypress
   switch (key_num)
   {
+    case KEY_DECREASE:
     case KEY_INDEX_PAGEUP:
       listViewPreviousPage();
       return KEY_PAGEUP;
 
+    case KEY_INCREASE:
     case KEY_INDEX_PAGEDOWN:
       listViewNextPage();
       return KEY_PAGEDOWN;
 
     case KEY_INDEX_BACK:
-      if(handleBack)
-        infoMenu.cur--;
+      if (handleBack)
+        CLOSE_MENU();
       return KEY_BACK;
 
     default:
-      return KEY_IDLE;
+      return KEY_IDLE;  // if no key is pressed and no page scrolling is requested
   }
 }

@@ -9,10 +9,10 @@ const MENUITEMS UnifiedHeatItems = {
     {ICON_HEAT,                    LABEL_PREHEAT},
     {ICON_HEAT,                    LABEL_HEAT},
     {ICON_FAN,                     LABEL_FAN},
-    {ICON_BACKGROUND,              LABEL_BACKGROUND},
-    {ICON_BACKGROUND,              LABEL_BACKGROUND},
+    {ICON_NULL,                    LABEL_NULL},
+    {ICON_NULL,                    LABEL_NULL},
     {ICON_COOLDOWN,                LABEL_COOLDOWN},
-    {ICON_BACKGROUND,              LABEL_BACKGROUND},
+    {ICON_NULL,                    LABEL_NULL},
     {ICON_BACK,                    LABEL_BACK},
   }
 };
@@ -23,21 +23,21 @@ void menuUnifiedHeat(void)
 
   menuDrawPage(&UnifiedHeatItems);
 
-  while (infoMenu.menu[infoMenu.cur] == menuUnifiedHeat)
+  while (MENU_IS(menuUnifiedHeat))
   {
     key_num = menuKeyGetValue();
     switch (key_num)
     {
       case KEY_ICON_0:
-        infoMenu.menu[++infoMenu.cur] = menuPreheat;
+        OPEN_MENU(menuPreheat);
         break;
 
       case KEY_ICON_1:
-        infoMenu.menu[++infoMenu.cur] = menuHeat;
+        OPEN_MENU(menuHeat);
         break;
 
       case KEY_ICON_2:
-        infoMenu.menu[++infoMenu.cur] = menuFan;
+        OPEN_MENU(menuFan);
         break;
 
       case KEY_ICON_5:
@@ -45,7 +45,7 @@ void menuUnifiedHeat(void)
         break;
 
       case KEY_ICON_7:
-        infoMenu.cur--;
+        CLOSE_MENU();
         break;
 
       default:

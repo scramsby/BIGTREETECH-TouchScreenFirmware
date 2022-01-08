@@ -3,17 +3,51 @@
 #include "ListItem.h"
 #include "Notification.h"
 
-// exhibitRect is 2 ICON Space in the Upper Row and 2 Center column.
 const GUI_RECT exhibitRect = {
+#ifdef PORTRAIT_MODE
+  // exhibitRect is 2 ICON Space in the Lowest Row and 2 Center column.
+  0.5*ICON_WIDTH+1*SPACE_X+START_X,  0*ICON_HEIGHT+0*SPACE_Y+ICON_START_Y,  2.5*ICON_WIDTH+2*SPACE_X+START_X,  1*ICON_HEIGHT+0*SPACE_Y+ICON_START_Y
+#else  // Landscape Mode
+  // exhibitRect is 2 ICON Space in the Upper Row and 2 Center column.
   1*ICON_WIDTH+1*SPACE_X+START_X,  0*ICON_HEIGHT+0*SPACE_Y+ICON_START_Y,  3*ICON_WIDTH+2*SPACE_X+START_X,  1*ICON_HEIGHT+0*SPACE_Y+ICON_START_Y
+#endif
 };
 
 // MENU FOR A TEMPERATURE DISPLAY SCREEN (TOOL TEMP, PID, ETC...)
 const GUI_RECT rect_of_keysIN[TM_RECT_COUNT] = {
-  // 8 icons area
+#ifdef PORTRAIT_MODE
+  // 8 icons area VERTICAL GUI
+  {0*ICON_WIDTH+0*SPACE_X+START_X,  1*ICON_HEIGHT+1*SPACE_Y+ICON_START_Y,  1*ICON_WIDTH+0*SPACE_X+START_X,  2*ICON_HEIGHT+1*SPACE_Y+ICON_START_Y},  // decrease
+  {0, 0, 0, 0},
+  {0, 0, 0, 0},
+  {2*ICON_WIDTH+2*SPACE_X+START_X,  1*ICON_HEIGHT+1*SPACE_Y+ICON_START_Y,  3*ICON_WIDTH+2*SPACE_X+START_X,  2*ICON_HEIGHT+1*SPACE_Y+ICON_START_Y},  // increase
+  {0*ICON_WIDTH+0*SPACE_X+START_X,  2*ICON_HEIGHT+2*SPACE_Y+ICON_START_Y,  1*ICON_WIDTH+0*SPACE_X+START_X,  3*ICON_HEIGHT+2*SPACE_Y+ICON_START_Y},  // type
+
+  {1*ICON_WIDTH+1*SPACE_X+START_X,  1*ICON_HEIGHT+1*SPACE_Y+ICON_START_Y,  2*ICON_WIDTH+1*SPACE_X+START_X,  2*ICON_HEIGHT+1*SPACE_Y+ICON_START_Y},  // increment
+  {1*ICON_WIDTH+1*SPACE_X+START_X,  2*ICON_HEIGHT+2*SPACE_Y+ICON_START_Y,  2*ICON_WIDTH+1*SPACE_X+START_X,  3*ICON_HEIGHT+2*SPACE_Y+ICON_START_Y},  // stop
+  {2*ICON_WIDTH+2*SPACE_X+START_X,  2*ICON_HEIGHT+2*SPACE_Y+ICON_START_Y,  3*ICON_WIDTH+2*SPACE_X+START_X,  3*ICON_HEIGHT+2*SPACE_Y+ICON_START_Y},  // usually back button
+
+  // 8 labels area
+  {0*SPACE_X_PER_ICON,    2*ICON_HEIGHT+1*SPACE_Y+ICON_START_Y,  1*SPACE_X_PER_ICON,    2*ICON_HEIGHT+2*SPACE_Y+ICON_START_Y},
+  {0.5*SPACE_X_PER_ICON,  1*ICON_HEIGHT+0*SPACE_Y+ICON_START_Y,  1.5*SPACE_X_PER_ICON,  1*ICON_HEIGHT+1*SPACE_Y+ICON_START_Y},
+  {1.5*SPACE_X_PER_ICON,  1*ICON_HEIGHT+0*SPACE_Y+ICON_START_Y,  2.5*SPACE_X_PER_ICON,  1*ICON_HEIGHT+1*SPACE_Y+ICON_START_Y},
+  {2*SPACE_X_PER_ICON,    2*ICON_HEIGHT+1*SPACE_Y+ICON_START_Y,  3*SPACE_X_PER_ICON,    2*ICON_HEIGHT+2*SPACE_Y+ICON_START_Y},
+  {0*SPACE_X_PER_ICON,    3*ICON_HEIGHT+2*SPACE_Y+ICON_START_Y,  1*SPACE_X_PER_ICON,    3*ICON_HEIGHT+3*SPACE_Y+ICON_START_Y},
+
+  {1*SPACE_X_PER_ICON,    2*ICON_HEIGHT+1*SPACE_Y+ICON_START_Y,  2*SPACE_X_PER_ICON,    2*ICON_HEIGHT+2*SPACE_Y+ICON_START_Y},
+  {1*SPACE_X_PER_ICON,    3*ICON_HEIGHT+2*SPACE_Y+ICON_START_Y,  2*SPACE_X_PER_ICON,    3*ICON_HEIGHT+3*SPACE_Y+ICON_START_Y},
+  {2*SPACE_X_PER_ICON,    3*ICON_HEIGHT+2*SPACE_Y+ICON_START_Y,  3*SPACE_X_PER_ICON,    3*ICON_HEIGHT+3*SPACE_Y+ICON_START_Y},
+
+  // title bar area
+  {0, 0, LCD_WIDTH, ICON_START_Y},
+
+  // display area
+  {0.5*ICON_WIDTH+1*SPACE_X+START_X,  0*ICON_HEIGHT+0*SPACE_Y+ICON_START_Y,  2.5*ICON_WIDTH+2*SPACE_X+START_X,  1*ICON_HEIGHT+0*SPACE_Y+ICON_START_Y}
+#else  // Landscape Mode
+  // 8 icons area DEFAULT LANDSCAPE GUI
   {0*ICON_WIDTH+0*SPACE_X+START_X,  0*ICON_HEIGHT+0*SPACE_Y+ICON_START_Y,  1*ICON_WIDTH+0*SPACE_X+START_X,  1*ICON_HEIGHT+0*SPACE_Y+ICON_START_Y},
-  {0,0,0,0},
-  {0,0,0,0},
+  {0, 0, 0, 0},
+  {0, 0, 0, 0},
   {3*ICON_WIDTH+3*SPACE_X+START_X,  0*ICON_HEIGHT+0*SPACE_Y+ICON_START_Y,  4*ICON_WIDTH+3*SPACE_X+START_X,  1*ICON_HEIGHT+0*SPACE_Y+ICON_START_Y},
   {0*ICON_WIDTH+0*SPACE_X+START_X,  1*ICON_HEIGHT+1*SPACE_Y+ICON_START_Y,  1*ICON_WIDTH+0*SPACE_X+START_X,  2*ICON_HEIGHT+1*SPACE_Y+ICON_START_Y},
   {1*ICON_WIDTH+1*SPACE_X+START_X,  1*ICON_HEIGHT+1*SPACE_Y+ICON_START_Y,  2*ICON_WIDTH+1*SPACE_X+START_X,  2*ICON_HEIGHT+1*SPACE_Y+ICON_START_Y},
@@ -31,13 +65,40 @@ const GUI_RECT rect_of_keysIN[TM_RECT_COUNT] = {
   {3*SPACE_X_PER_ICON,  2*ICON_HEIGHT+1*SPACE_Y+ICON_START_Y,  4*SPACE_X_PER_ICON,  2*ICON_HEIGHT+2*SPACE_Y+ICON_START_Y},
 
   // title bar area
-  {0 ,0 ,LCD_WIDTH, ICON_START_Y},
-  // tempbox area
+  {0, 0, LCD_WIDTH, ICON_START_Y},
+
+  // display area
   {1*ICON_WIDTH+1*SPACE_X+START_X,  0*ICON_HEIGHT+0*SPACE_Y+ICON_START_Y,  3*ICON_WIDTH+2*SPACE_X+START_X,  1*ICON_HEIGHT+0*SPACE_Y+ICON_START_Y}
+#endif
 };
 
-const GUI_RECT rect_of_key[MENU_RECT_COUNT]={
-  // 8 icons area
+const GUI_RECT rect_of_key[MENU_RECT_COUNT] = {
+#ifdef PORTRAIT_MODE
+  // 3 icons per row 2 rows last row 2 icons VERTICAL GUI
+  {0*ICON_WIDTH+0*SPACE_X+START_X,  0*ICON_HEIGHT+0*SPACE_Y+ICON_START_Y,  1*ICON_WIDTH+0*SPACE_X+START_X,  1*ICON_HEIGHT+0*SPACE_Y+ICON_START_Y},
+  {1*ICON_WIDTH+1*SPACE_X+START_X,  0*ICON_HEIGHT+0*SPACE_Y+ICON_START_Y,  2*ICON_WIDTH+1*SPACE_X+START_X,  1*ICON_HEIGHT+0*SPACE_Y+ICON_START_Y},
+  {2*ICON_WIDTH+2*SPACE_X+START_X,  0*ICON_HEIGHT+0*SPACE_Y+ICON_START_Y,  3*ICON_WIDTH+2*SPACE_X+START_X,  1*ICON_HEIGHT+0*SPACE_Y+ICON_START_Y},
+
+  {0*ICON_WIDTH+0*SPACE_X+START_X,  2*ICON_HEIGHT+2*SPACE_Y+ICON_START_Y,  1*ICON_WIDTH+0*SPACE_X+START_X,  3*ICON_HEIGHT+2*SPACE_Y+ICON_START_Y},
+  {0*ICON_WIDTH+0*SPACE_X+START_X,  1*ICON_HEIGHT+1*SPACE_Y+ICON_START_Y,  1*ICON_WIDTH+0*SPACE_X+START_X,  2*ICON_HEIGHT+1*SPACE_Y+ICON_START_Y},
+  {1*ICON_WIDTH+1*SPACE_X+START_X,  1*ICON_HEIGHT+1*SPACE_Y+ICON_START_Y,  2*ICON_WIDTH+1*SPACE_X+START_X,  2*ICON_HEIGHT+1*SPACE_Y+ICON_START_Y},
+
+  {2*ICON_WIDTH+2*SPACE_X+START_X,  1*ICON_HEIGHT+1*SPACE_Y+ICON_START_Y,  3*ICON_WIDTH+2*SPACE_X+START_X,  2*ICON_HEIGHT+1*SPACE_Y+ICON_START_Y},
+  {2*ICON_WIDTH+2*SPACE_X+START_X,  2*ICON_HEIGHT+2*SPACE_Y+ICON_START_Y,  3*ICON_WIDTH+2*SPACE_X+START_X,  3*ICON_HEIGHT+2*SPACE_Y+ICON_START_Y},
+
+  // labels area
+  {0*SPACE_X_PER_ICON,  1*ICON_HEIGHT+0*SPACE_Y+ICON_START_Y,  1*SPACE_X_PER_ICON,  1*ICON_HEIGHT+1*SPACE_Y+ICON_START_Y},
+  {1*SPACE_X_PER_ICON,  1*ICON_HEIGHT+0*SPACE_Y+ICON_START_Y,  2*SPACE_X_PER_ICON,  1*ICON_HEIGHT+1*SPACE_Y+ICON_START_Y},
+  {2*SPACE_X_PER_ICON,  1*ICON_HEIGHT+0*SPACE_Y+ICON_START_Y,  3*SPACE_X_PER_ICON,  1*ICON_HEIGHT+1*SPACE_Y+ICON_START_Y},
+
+  {0*SPACE_X_PER_ICON,  3*ICON_HEIGHT+2*SPACE_Y+ICON_START_Y,  1*SPACE_X_PER_ICON,  3*ICON_HEIGHT+3*SPACE_Y+ICON_START_Y},
+  {0*SPACE_X_PER_ICON,  2*ICON_HEIGHT+1*SPACE_Y+ICON_START_Y,  1*SPACE_X_PER_ICON,  2*ICON_HEIGHT+2*SPACE_Y+ICON_START_Y},
+  {1*SPACE_X_PER_ICON,  2*ICON_HEIGHT+1*SPACE_Y+ICON_START_Y,  2*SPACE_X_PER_ICON,  2*ICON_HEIGHT+2*SPACE_Y+ICON_START_Y},
+
+  {2*SPACE_X_PER_ICON,  2*ICON_HEIGHT+1*SPACE_Y+ICON_START_Y,  3*SPACE_X_PER_ICON,  2*ICON_HEIGHT+2*SPACE_Y+ICON_START_Y},
+  {2*SPACE_X_PER_ICON,  3*ICON_HEIGHT+2*SPACE_Y+ICON_START_Y,  3*SPACE_X_PER_ICON,  3*ICON_HEIGHT+3*SPACE_Y+ICON_START_Y},
+#else  // Landscape Mode
+  // 8 icons area DEFAULT LANDSCAPE GUI
   {0*ICON_WIDTH+0*SPACE_X+START_X,  0*ICON_HEIGHT+0*SPACE_Y+ICON_START_Y,  1*ICON_WIDTH+0*SPACE_X+START_X,  1*ICON_HEIGHT+0*SPACE_Y+ICON_START_Y},
   {1*ICON_WIDTH+1*SPACE_X+START_X,  0*ICON_HEIGHT+0*SPACE_Y+ICON_START_Y,  2*ICON_WIDTH+1*SPACE_X+START_X,  1*ICON_HEIGHT+0*SPACE_Y+ICON_START_Y},
   {2*ICON_WIDTH+2*SPACE_X+START_X,  0*ICON_HEIGHT+0*SPACE_Y+ICON_START_Y,  3*ICON_WIDTH+2*SPACE_X+START_X,  1*ICON_HEIGHT+0*SPACE_Y+ICON_START_Y},
@@ -56,15 +117,13 @@ const GUI_RECT rect_of_key[MENU_RECT_COUNT]={
   {1*SPACE_X_PER_ICON,  2*ICON_HEIGHT+1*SPACE_Y+ICON_START_Y,  2*SPACE_X_PER_ICON,  2*ICON_HEIGHT+2*SPACE_Y+ICON_START_Y},
   {2*SPACE_X_PER_ICON,  2*ICON_HEIGHT+1*SPACE_Y+ICON_START_Y,  3*SPACE_X_PER_ICON,  2*ICON_HEIGHT+2*SPACE_Y+ICON_START_Y},
   {3*SPACE_X_PER_ICON,  2*ICON_HEIGHT+1*SPACE_Y+ICON_START_Y,  4*SPACE_X_PER_ICON,  2*ICON_HEIGHT+2*SPACE_Y+ICON_START_Y},
-
+#endif
   // title bar area
-  {0 ,0 ,LCD_WIDTH, ICON_START_Y},
+  {0, 0, LCD_WIDTH, ICON_START_Y}
 };
 
 const GUI_RECT rect_of_keySS[SS_RECT_COUNT] = {
-
 #ifdef TFT70_V3_0
-
   // 5 status icons area
   {0*SSICON_WIDTH+0*SS_SPACE_X+START_X,  0*SSICON_HEIGHT+0*SPACE_Y+ICON_START_Y,  1*SSICON_WIDTH+0*SS_SPACE_X+START_X,  1*SSICON_HEIGHT+0*SPACE_Y+ICON_START_Y},
   {1*SSICON_WIDTH+1*SS_SPACE_X+START_X,  0*SSICON_HEIGHT+0*SPACE_Y+ICON_START_Y,  2*SSICON_WIDTH+1*SS_SPACE_X+START_X,  1*SSICON_HEIGHT+0*SPACE_Y+ICON_START_Y},
@@ -73,35 +132,61 @@ const GUI_RECT rect_of_keySS[SS_RECT_COUNT] = {
   {4*SSICON_WIDTH+4*SS_SPACE_X+START_X,  0*SSICON_HEIGHT+0*SPACE_Y+ICON_START_Y,  5*SSICON_WIDTH+4*SS_SPACE_X+START_X,  1*SSICON_HEIGHT+0*SPACE_Y+ICON_START_Y},
   // 2nd icon row area
   {0*ICON_WIDTH+0*SPACE_X+START_X,  1*ICON_HEIGHT+1*SPACE_Y+ICON_START_Y,  1*ICON_WIDTH+0*SPACE_X+START_X,  2*ICON_HEIGHT+1*SPACE_Y+ICON_START_Y},
-  {0,0,0,0},
+  {0, 0, 0, 0},
   {3*ICON_WIDTH+3*SPACE_X+START_X,  1*ICON_HEIGHT+1*SPACE_Y+ICON_START_Y,  4*ICON_WIDTH+3*SPACE_X+START_X,  2*ICON_HEIGHT+1*SPACE_Y+ICON_START_Y},
 
   // 8 labels area
-  {0,0,0,0},
-  {0,0,0,0},
-  {0,0,0,0},
-  {0,0,0,0},
-  {0,0,0,0},
+  {0, 0, 0, 0},
+  {0, 0, 0, 0},
+  {0, 0, 0, 0},
+  {0, 0, 0, 0},
+  {0, 0, 0, 0},
   {0*SPACE_X_PER_ICON,  2*ICON_HEIGHT+1*SPACE_Y+ICON_START_Y,  1*SPACE_X_PER_ICON,  2*ICON_HEIGHT+2*SPACE_Y+ICON_START_Y},
   {1*SPACE_X_PER_ICON,  2*ICON_HEIGHT+1*SPACE_Y+ICON_START_Y,  3*SPACE_X_PER_ICON,  2*ICON_HEIGHT+2*SPACE_Y+ICON_START_Y},
   {3*SPACE_X_PER_ICON,  2*ICON_HEIGHT+1*SPACE_Y+ICON_START_Y,  4*SPACE_X_PER_ICON,  2*ICON_HEIGHT+2*SPACE_Y+ICON_START_Y},
 
   // title bar area
-  {0 ,0 ,LCD_WIDTH, ICON_START_Y},
+  {0, 0, LCD_WIDTH, ICON_START_Y},
 
   // infobox area
   {1*ICON_WIDTH+1*SPACE_X+START_X,  1*ICON_HEIGHT+1*SPACE_Y+ICON_START_Y,  3*ICON_WIDTH+2*SPACE_X+START_X,  2*ICON_HEIGHT+1*SPACE_Y+ICON_START_Y}
+#elif defined(PORTRAIT_MODE)
+  // 3 icons per row 2 rows last row status bar centered VERTICAL GUI
+  {0*ICON_WIDTH+0*SPACE_X+START_X,  1*ICON_HEIGHT+1*SPACE_Y+ICON_START_Y,  1*ICON_WIDTH+0*SPACE_X+START_X,  2*ICON_HEIGHT+1*SPACE_Y+ICON_START_Y},
+  {1*ICON_WIDTH+1*SPACE_X+START_X,  1*ICON_HEIGHT+1*SPACE_Y+ICON_START_Y,  2*ICON_WIDTH+1*SPACE_X+START_X,  2*ICON_HEIGHT+1*SPACE_Y+ICON_START_Y},
+  {2*ICON_WIDTH+2*SPACE_X+START_X,  1*ICON_HEIGHT+1*SPACE_Y+ICON_START_Y,  3*ICON_WIDTH+2*SPACE_X+START_X,  2*ICON_HEIGHT+1*SPACE_Y+ICON_START_Y},
 
-#else
+  {0*ICON_WIDTH+0*SPACE_X+START_X,  2*ICON_HEIGHT+2*SPACE_Y+ICON_START_Y,  1*ICON_WIDTH+0*SPACE_X+START_X,  3*ICON_HEIGHT+2*SPACE_Y+ICON_START_Y},
+  {1*ICON_WIDTH+1*SPACE_X+START_X,  2*ICON_HEIGHT+2*SPACE_Y+ICON_START_Y,  2*ICON_WIDTH+1*SPACE_X+START_X,  3*ICON_HEIGHT+2*SPACE_Y+ICON_START_Y},
+  {0, 0, 0, 0},
+  {0, 0, 0, 0},
+  {2*ICON_WIDTH+2*SPACE_X+START_X,  2*ICON_HEIGHT+2*SPACE_Y+ICON_START_Y,  3*ICON_WIDTH+2*SPACE_X+START_X,  3*ICON_HEIGHT+2*SPACE_Y+ICON_START_Y},
 
-  // 8 icons area
+  // labels area
+  {0*SPACE_X_PER_ICON,    2*ICON_HEIGHT+1*SPACE_Y+ICON_START_Y,  1*SPACE_X_PER_ICON,    2*ICON_HEIGHT+2*SPACE_Y+ICON_START_Y},
+  {1*SPACE_X_PER_ICON,    2*ICON_HEIGHT+1*SPACE_Y+ICON_START_Y,  2*SPACE_X_PER_ICON,    2*ICON_HEIGHT+2*SPACE_Y+ICON_START_Y},
+  {2*SPACE_X_PER_ICON,    2*ICON_HEIGHT+1*SPACE_Y+ICON_START_Y,  3*SPACE_X_PER_ICON,    2*ICON_HEIGHT+2*SPACE_Y+ICON_START_Y},
+
+  {0*SPACE_X_PER_ICON,    3*ICON_HEIGHT+2*SPACE_Y+ICON_START_Y,  1*SPACE_X_PER_ICON,    3*ICON_HEIGHT+3*SPACE_Y+ICON_START_Y},
+  {1*SPACE_X_PER_ICON,    3*ICON_HEIGHT+2*SPACE_Y+ICON_START_Y,  2*SPACE_X_PER_ICON,    3*ICON_HEIGHT+3*SPACE_Y+ICON_START_Y},
+  {0.5*SPACE_X_PER_ICON,  1*ICON_HEIGHT+0*SPACE_Y+ICON_START_Y,  1.5*SPACE_X_PER_ICON,  1*ICON_HEIGHT+1*SPACE_Y+ICON_START_Y},
+  {1.5*SPACE_X_PER_ICON,  1*ICON_HEIGHT+0*SPACE_Y+ICON_START_Y,  2.5*SPACE_X_PER_ICON,  1*ICON_HEIGHT+1*SPACE_Y+ICON_START_Y},
+  {2*SPACE_X_PER_ICON,    3*ICON_HEIGHT+2*SPACE_Y+ICON_START_Y,  3*SPACE_X_PER_ICON,    3*ICON_HEIGHT+3*SPACE_Y+ICON_START_Y},
+
+  // title bar area
+  {0, 0, LCD_WIDTH, ICON_START_Y},
+
+  // infobox area
+  {0.5*ICON_WIDTH+0*SPACE_X+START_X,  0*ICON_HEIGHT+0*SPACE_Y+ICON_START_Y,  2.5*ICON_WIDTH+1*SPACE_X+START_X,  1*ICON_HEIGHT+0*SPACE_Y+ICON_START_Y}
+#else  // Landscape Mode
+  // 8 icons area DEFAULT LANDSCAPE GUI
   {0*ICON_WIDTH+0*SPACE_X+START_X,  0*ICON_HEIGHT+0*SPACE_Y+ICON_START_Y,  1*ICON_WIDTH+0*SPACE_X+START_X,  1*ICON_HEIGHT+0*SPACE_Y+ICON_START_Y},
   {1*ICON_WIDTH+1*SPACE_X+START_X,  0*ICON_HEIGHT+0*SPACE_Y+ICON_START_Y,  2*ICON_WIDTH+1*SPACE_X+START_X,  1*ICON_HEIGHT+0*SPACE_Y+ICON_START_Y},
   {2*ICON_WIDTH+2*SPACE_X+START_X,  0*ICON_HEIGHT+0*SPACE_Y+ICON_START_Y,  3*ICON_WIDTH+2*SPACE_X+START_X,  1*ICON_HEIGHT+0*SPACE_Y+ICON_START_Y},
   {3*ICON_WIDTH+3*SPACE_X+START_X,  0*ICON_HEIGHT+0*SPACE_Y+ICON_START_Y,  4*ICON_WIDTH+3*SPACE_X+START_X,  1*ICON_HEIGHT+0*SPACE_Y+ICON_START_Y},
   {0*ICON_WIDTH+0*SPACE_X+START_X,  1*ICON_HEIGHT+1*SPACE_Y+ICON_START_Y,  1*ICON_WIDTH+0*SPACE_X+START_X,  2*ICON_HEIGHT+1*SPACE_Y+ICON_START_Y},
-  {0,0,0,0},
-  {0,0,0,0},
+  {0, 0, 0, 0},
+  {0, 0, 0, 0},
   {3*ICON_WIDTH+3*SPACE_X+START_X,  1*ICON_HEIGHT+1*SPACE_Y+ICON_START_Y,  4*ICON_WIDTH+3*SPACE_X+START_X,  2*ICON_HEIGHT+1*SPACE_Y+ICON_START_Y},
 
   // 8 labels area
@@ -115,75 +200,249 @@ const GUI_RECT rect_of_keySS[SS_RECT_COUNT] = {
   {3*SPACE_X_PER_ICON,  2*ICON_HEIGHT+1*SPACE_Y+ICON_START_Y,  4*SPACE_X_PER_ICON,  2*ICON_HEIGHT+2*SPACE_Y+ICON_START_Y},
 
   // title bar area
-  {0 ,0 ,LCD_WIDTH, ICON_START_Y},
+  {0, 0, LCD_WIDTH, ICON_START_Y},
 
   // infobox area
-  {1*ICON_WIDTH+1*SPACE_X+START_X,  1*ICON_HEIGHT+1*SPACE_Y+ICON_START_Y,  3*ICON_WIDTH+2*SPACE_X+START_X,  2*ICON_HEIGHT+1*SPACE_Y+ICON_START_Y},
+  {1*ICON_WIDTH+1*SPACE_X+START_X,  1*ICON_HEIGHT+1*SPACE_Y+ICON_START_Y,  3*ICON_WIDTH+2*SPACE_X+START_X,  2*ICON_HEIGHT+1*SPACE_Y+ICON_START_Y}
+#endif
+};
 
+const GUI_RECT rect_of_keyPS[] = { // PS = PRINT SCREEN, This template is used to locate the live icons on the Printing Screen.
+#ifdef PORTRAIT_MODE
+  // hotend area VERTICAL GUI
+  {START_X+PICON_LG_WIDTH*0+PICON_SPACE_X*0,                  PICON_START_Y+PICON_HEIGHT*0+PICON_SPACE_Y*0,
+   START_X+PICON_LG_WIDTH*1+PICON_SPACE_X*0+PICON_SM_WIDTH*0, PICON_START_Y+PICON_HEIGHT*1+PICON_SPACE_Y*0},
+  // bed area
+  {START_X+PICON_LG_WIDTH*1+PICON_SPACE_X*1,                  PICON_START_Y+PICON_HEIGHT*0+PICON_SPACE_Y*0,
+   START_X+PICON_LG_WIDTH*2+PICON_SPACE_X*1+PICON_SM_WIDTH*0, PICON_START_Y+PICON_HEIGHT*1+PICON_SPACE_Y*0},
+  // fan area
+  {START_X+PICON_LG_WIDTH*0+PICON_SPACE_X*0,                  1*ICON_HEIGHT+1*SPACE_Y+ICON_START_Y,
+   START_X+PICON_LG_WIDTH*0+PICON_SPACE_X*0+PICON_SM_WIDTH*1, 1*ICON_HEIGHT+1*SPACE_Y+ICON_START_Y+PICON_HEIGHT*1},
+  // timer area
+  {START_X+PICON_LG_WIDTH*0+PICON_SPACE_X*0,                  PICON_START_Y+PICON_HEIGHT*1+PICON_SPACE_Y*1,
+   START_X+PICON_LG_WIDTH*1+PICON_SPACE_X*0+PICON_SM_WIDTH*0, PICON_START_Y+PICON_HEIGHT*2+PICON_SPACE_Y*1},
+  // layer area
+  {START_X+PICON_LG_WIDTH*1+PICON_SPACE_X*1,                  PICON_START_Y+PICON_HEIGHT*1+PICON_SPACE_Y*1,
+   START_X+PICON_LG_WIDTH*2+PICON_SPACE_X*1+PICON_SM_WIDTH*0, PICON_START_Y+PICON_HEIGHT*2+PICON_SPACE_Y*1},
+  // speed area
+  {START_X+PICON_LG_WIDTH*0+PICON_SPACE_X*0,                  1*ICON_HEIGHT+1*SPACE_Y+ICON_START_Y+PICON_HEIGHT*1+PICON_SPACE_Y*1,
+   START_X+PICON_LG_WIDTH*0+PICON_SPACE_X*0+PICON_SM_WIDTH*1, 1*ICON_HEIGHT+1*SPACE_Y+ICON_START_Y+PICON_HEIGHT*2+PICON_SPACE_Y*1},
+
+  // 1st bottom icon area.
+  {0*ICON_WIDTH+0*SPACE_X+START_X,  2*ICON_HEIGHT+2*SPACE_Y+ICON_START_Y,  1*ICON_WIDTH+0*SPACE_X+START_X,  3*ICON_HEIGHT+2*SPACE_Y+ICON_START_Y},
+  // 1 side icon next to layer and speed area
+  {2*ICON_WIDTH+2*SPACE_X+START_X,  1*ICON_HEIGHT+1*SPACE_Y+ICON_START_Y,  3*ICON_WIDTH+2*SPACE_X+START_X,  2*ICON_HEIGHT+1*SPACE_Y+ICON_START_Y},
+  // 2nd and 3rd icon bottom area
+  {1*ICON_WIDTH+1*SPACE_X+START_X,  2*ICON_HEIGHT+2*SPACE_Y+ICON_START_Y,  2*ICON_WIDTH+1*SPACE_X+START_X,  3*ICON_HEIGHT+2*SPACE_Y+ICON_START_Y},
+  {2*ICON_WIDTH+2*SPACE_X+START_X,  2*ICON_HEIGHT+2*SPACE_Y+ICON_START_Y,  3*ICON_WIDTH+2*SPACE_X+START_X,  3*ICON_HEIGHT+2*SPACE_Y+ICON_START_Y},
+#else  // Landscape Mode
+  // hotend area DEFAULT LANDSCAPE GUI
+  {START_X+PICON_LG_WIDTH*0+PICON_SPACE_X*0,                  PICON_START_Y+PICON_HEIGHT*0+PICON_SPACE_Y*0,
+   START_X+PICON_LG_WIDTH*1+PICON_SPACE_X*0+PICON_SM_WIDTH*0, PICON_START_Y+PICON_HEIGHT*1+PICON_SPACE_Y*0},
+  // bed area
+  {START_X+PICON_LG_WIDTH*1+PICON_SPACE_X*1,                  PICON_START_Y+PICON_HEIGHT*0+PICON_SPACE_Y*0,
+   START_X+PICON_LG_WIDTH*2+PICON_SPACE_X*1+PICON_SM_WIDTH*0, PICON_START_Y+PICON_HEIGHT*1+PICON_SPACE_Y*0},
+  // fan area
+  {START_X+PICON_LG_WIDTH*2+PICON_SPACE_X*2,                  PICON_START_Y+PICON_HEIGHT*0+PICON_SPACE_Y*0,
+   START_X+PICON_LG_WIDTH*2+PICON_SPACE_X*2+PICON_SM_WIDTH*1, PICON_START_Y+PICON_HEIGHT*1+PICON_SPACE_Y*0},
+  // timer area
+  {START_X+PICON_LG_WIDTH*0+PICON_SPACE_X*0,                  PICON_START_Y+PICON_HEIGHT*1+PICON_SPACE_Y*1,
+   START_X+PICON_LG_WIDTH*1+PICON_SPACE_X*0+PICON_SM_WIDTH*0, PICON_START_Y+PICON_HEIGHT*2+PICON_SPACE_Y*1},
+  // layer area
+  {START_X+PICON_LG_WIDTH*1+PICON_SPACE_X*1,                  PICON_START_Y+PICON_HEIGHT*1+PICON_SPACE_Y*1,
+   START_X+PICON_LG_WIDTH*2+PICON_SPACE_X*1+PICON_SM_WIDTH*0, PICON_START_Y+PICON_HEIGHT*2+PICON_SPACE_Y*1},
+  // speed area
+  {START_X+PICON_LG_WIDTH*2+PICON_SPACE_X*2,                  PICON_START_Y+PICON_HEIGHT*1+PICON_SPACE_Y*1,
+   START_X+PICON_LG_WIDTH*2+PICON_SPACE_X*2+PICON_SM_WIDTH*1, PICON_START_Y+PICON_HEIGHT*2+PICON_SPACE_Y*1},
+
+  // 4 bottom icons area. it's not used, instead rect_of_keySS is used
+  {0*ICON_WIDTH+0*SPACE_X+START_X,  1*ICON_HEIGHT+1*SPACE_Y+ICON_START_Y,  1*ICON_WIDTH+0*SPACE_X+START_X,  2*ICON_HEIGHT+1*SPACE_Y+ICON_START_Y},
+  {1*ICON_WIDTH+1*SPACE_X+START_X,  1*ICON_HEIGHT+1*SPACE_Y+ICON_START_Y,  2*ICON_WIDTH+1*SPACE_X+START_X,  2*ICON_HEIGHT+1*SPACE_Y+ICON_START_Y},
+  {2*ICON_WIDTH+2*SPACE_X+START_X,  1*ICON_HEIGHT+1*SPACE_Y+ICON_START_Y,  3*ICON_WIDTH+2*SPACE_X+START_X,  2*ICON_HEIGHT+1*SPACE_Y+ICON_START_Y},
+  {3*ICON_WIDTH+3*SPACE_X+START_X,  1*ICON_HEIGHT+1*SPACE_Y+ICON_START_Y,  4*ICON_WIDTH+3*SPACE_X+START_X,  2*ICON_HEIGHT+1*SPACE_Y+ICON_START_Y},
+#endif
+  // title bar area
+  {0, 0, LCD_WIDTH, ICON_START_Y}
+};
+
+#ifdef PORTRAIT_MODE
+const GUI_RECT rect_of_keyPS_draw[] = { // VERTICAL GUI Printing menu for drawing UI
+  {0, 0, 0, 0},
+  {0, 0, 0, 0},
+  {0, 0, 0, 0},
+  {0, 0, 0, 0},
+  // 1st bottom icon
+  {0*ICON_WIDTH+0*SPACE_X+START_X,  2*ICON_HEIGHT+2*SPACE_Y+ICON_START_Y,  1*ICON_WIDTH+0*SPACE_X+START_X,  3*ICON_HEIGHT+2*SPACE_Y+ICON_START_Y},
+  // 1 side icon next to layer and speed area (babystep icon)
+  {2*ICON_WIDTH+2*SPACE_X+START_X,  1*ICON_HEIGHT+1*SPACE_Y+ICON_START_Y,  3*ICON_WIDTH+2*SPACE_X+START_X,  2*ICON_HEIGHT+1*SPACE_Y+ICON_START_Y},
+  // 2nd and 3rd bottom icon
+  {1*ICON_WIDTH+1*SPACE_X+START_X,  2*ICON_HEIGHT+2*SPACE_Y+ICON_START_Y,  2*ICON_WIDTH+1*SPACE_X+START_X,  3*ICON_HEIGHT+2*SPACE_Y+ICON_START_Y},
+  {2*ICON_WIDTH+2*SPACE_X+START_X,  2*ICON_HEIGHT+2*SPACE_Y+ICON_START_Y,  3*ICON_WIDTH+2*SPACE_X+START_X,  3*ICON_HEIGHT+2*SPACE_Y+ICON_START_Y},
+
+  // labels
+  {0, 0, 0, 0},
+  {0, 0, 0, 0},
+  {0, 0, 0, 0},
+  {0, 0, 0, 0},
+  // 1st bottom icon
+  {0*SPACE_X_PER_ICON,  3*ICON_HEIGHT+2*SPACE_Y+ICON_START_Y,  1*SPACE_X_PER_ICON,  3*ICON_HEIGHT+3*SPACE_Y+ICON_START_Y},
+  // 1 side icon next to layer and speed area
+  {2*SPACE_X_PER_ICON,  2*ICON_HEIGHT+1*SPACE_Y+ICON_START_Y,  3*SPACE_X_PER_ICON,  2*ICON_HEIGHT+2*SPACE_Y+ICON_START_Y},
+  // 2nd and 3rd bottom icon
+  {1*SPACE_X_PER_ICON,  3*ICON_HEIGHT+2*SPACE_Y+ICON_START_Y,  2*SPACE_X_PER_ICON,  3*ICON_HEIGHT+3*SPACE_Y+ICON_START_Y},
+  {2*SPACE_X_PER_ICON,  3*ICON_HEIGHT+2*SPACE_Y+ICON_START_Y,  3*SPACE_X_PER_ICON,  3*ICON_HEIGHT+3*SPACE_Y+ICON_START_Y},
+
+  // title bar area
+  {0, 0, LCD_WIDTH, ICON_START_Y}
+};
+#endif
+
+const GUI_RECT rect_of_keyPS_end[] = {
+#ifdef PORTRAIT_MODE
+  // hotend area VERTICAL GUI
+  {START_X+PICON_LG_WIDTH*0+PICON_SPACE_X*0,                  PICON_START_Y+PICON_HEIGHT*0+PICON_SPACE_Y*0,
+   START_X+PICON_LG_WIDTH*1+PICON_SPACE_X*0+PICON_SM_WIDTH*0, PICON_START_Y+PICON_HEIGHT*1+PICON_SPACE_Y*0},
+  // bed area
+  {START_X+PICON_LG_WIDTH*1+PICON_SPACE_X*1,                  PICON_START_Y+PICON_HEIGHT*0+PICON_SPACE_Y*0,
+   START_X+PICON_LG_WIDTH*2+PICON_SPACE_X*1+PICON_SM_WIDTH*0, PICON_START_Y+PICON_HEIGHT*1+PICON_SPACE_Y*0},
+  // fan area
+  {START_X+PICON_LG_WIDTH*0+PICON_SPACE_X*0,                  1*ICON_HEIGHT+1*SPACE_Y+ICON_START_Y,
+   START_X+PICON_LG_WIDTH*0+PICON_SPACE_X*0+PICON_SM_WIDTH*1, 1*ICON_HEIGHT+1*SPACE_Y+ICON_START_Y+PICON_HEIGHT*1},
+  // timer area
+  {START_X+PICON_LG_WIDTH*0+PICON_SPACE_X*0,                  PICON_START_Y+PICON_HEIGHT*1+PICON_SPACE_Y*1,
+   START_X+PICON_LG_WIDTH*1+PICON_SPACE_X*0+PICON_SM_WIDTH*0, PICON_START_Y+PICON_HEIGHT*2+PICON_SPACE_Y*1},
+  // layer area
+  {START_X+PICON_LG_WIDTH*1+PICON_SPACE_X*1,                  PICON_START_Y+PICON_HEIGHT*1+PICON_SPACE_Y*1,
+   START_X+PICON_LG_WIDTH*2+PICON_SPACE_X*1+PICON_SM_WIDTH*0, PICON_START_Y+PICON_HEIGHT*2+PICON_SPACE_Y*1},
+  // speed area
+  {START_X+PICON_LG_WIDTH*0+PICON_SPACE_X*0,                  1*ICON_HEIGHT+1*SPACE_Y+ICON_START_Y+PICON_HEIGHT*1+PICON_SPACE_Y*1,
+   START_X+PICON_LG_WIDTH*0+PICON_SPACE_X*0+PICON_SM_WIDTH*1, 1*ICON_HEIGHT+1*SPACE_Y+ICON_START_Y+PICON_HEIGHT*2+PICON_SPACE_Y*1},
+
+  // 3 bottom icons area
+  {0*ICON_WIDTH+0*SPACE_X+START_X,  2*ICON_HEIGHT+2*SPACE_Y+ICON_START_Y,  1*ICON_WIDTH+0*SPACE_X+START_X,  3*ICON_HEIGHT+2*SPACE_Y+ICON_START_Y},
+  {0, 0, 0, 0},
+  {0, 0, 0, 0},
+  // 1 side icon next to layer and speed area
+  {2*ICON_WIDTH+2*SPACE_X+START_X,  1*ICON_HEIGHT+1*SPACE_Y+ICON_START_Y,  3*ICON_WIDTH+2*SPACE_X+START_X,  2*ICON_HEIGHT+1*SPACE_Y+ICON_START_Y},
+
+  // title bar area
+  {0, 0, LCD_WIDTH, ICON_START_Y},
+
+  // infobox
+  {1*SPACE_X_PER_ICON,  3*ICON_HEIGHT+2*SPACE_Y+ICON_START_Y,  3*ICON_WIDTH+2*SPACE_X+START_X,  3*ICON_HEIGHT+2*SPACE_Y+ICON_START_Y}
+#else  // Landscape Mode
+  // hotend area DEFAULT LANDSCAPE GUI
+  {START_X+PICON_LG_WIDTH*0+PICON_SPACE_X*0,                  PICON_START_Y+PICON_HEIGHT*0+PICON_SPACE_Y*0,
+   START_X+PICON_LG_WIDTH*1+PICON_SPACE_X*0+PICON_SM_WIDTH*0, PICON_START_Y+PICON_HEIGHT*1+PICON_SPACE_Y*0},
+  // bed area
+  {START_X+PICON_LG_WIDTH*1+PICON_SPACE_X*1,                  PICON_START_Y+PICON_HEIGHT*0+PICON_SPACE_Y*0,
+   START_X+PICON_LG_WIDTH*2+PICON_SPACE_X*1+PICON_SM_WIDTH*0, PICON_START_Y+PICON_HEIGHT*1+PICON_SPACE_Y*0},
+  // fan area
+  {START_X+PICON_LG_WIDTH*2+PICON_SPACE_X*2,                  PICON_START_Y+PICON_HEIGHT*0+PICON_SPACE_Y*0,
+   START_X+PICON_LG_WIDTH*2+PICON_SPACE_X*2+PICON_SM_WIDTH*1, PICON_START_Y+PICON_HEIGHT*1+PICON_SPACE_Y*0},
+  // timer area
+  {START_X+PICON_LG_WIDTH*0+PICON_SPACE_X*0,                  PICON_START_Y+PICON_HEIGHT*1+PICON_SPACE_Y*1,
+   START_X+PICON_LG_WIDTH*1+PICON_SPACE_X*0+PICON_SM_WIDTH*0, PICON_START_Y+PICON_HEIGHT*2+PICON_SPACE_Y*1},
+  // layer area
+  {START_X+PICON_LG_WIDTH*0+PICON_SPACE_X*0,                  PICON_START_Y+PICON_HEIGHT*1+PICON_SPACE_Y*1,
+   START_X+PICON_LG_WIDTH*2+PICON_SPACE_X*1+PICON_SM_WIDTH*0, PICON_START_Y+PICON_HEIGHT*2+PICON_SPACE_Y*1},
+  // speed area
+  {START_X+PICON_LG_WIDTH*2+PICON_SPACE_X*2,                  PICON_START_Y+PICON_HEIGHT*1+PICON_SPACE_Y*1,
+   START_X+PICON_LG_WIDTH*2+PICON_SPACE_X*2+PICON_SM_WIDTH*1, PICON_START_Y+PICON_HEIGHT*2+PICON_SPACE_Y*1},
+
+  // 4 bottom icons area
+  {0*ICON_WIDTH+0*SPACE_X+START_X,  1*ICON_HEIGHT+1*SPACE_Y+ICON_START_Y,  1*ICON_WIDTH+0*SPACE_X+START_X,  2*ICON_HEIGHT+1*SPACE_Y+ICON_START_Y},
+  {0, 0, 0, 0},
+  {0, 0, 0, 0},
+  {3*ICON_WIDTH+3*SPACE_X+START_X,  1*ICON_HEIGHT+1*SPACE_Y+ICON_START_Y,  4*ICON_WIDTH+3*SPACE_X+START_X,  2*ICON_HEIGHT+1*SPACE_Y+ICON_START_Y},
+
+  // title bar area
+  {0, 0, LCD_WIDTH, ICON_START_Y},
+
+  // infobox
+  {1*ICON_WIDTH+1*SPACE_X+START_X,  1*ICON_HEIGHT+1*SPACE_Y+ICON_START_Y,  3*ICON_WIDTH+2*SPACE_X+START_X,  2*ICON_HEIGHT+1*SPACE_Y+ICON_START_Y}
 #endif
 };
 
 const GUI_RECT rect_of_keyListView[ITEM_PER_PAGE + 1] = {
-  // 8 icons area
+#ifdef PORTRAIT_MODE
+  // list area VERTICAL GUI
   {START_X,  0*LISTITEM_HEIGHT+ICON_START_Y,  LISTITEM_WIDTH+START_X,  1*LISTITEM_HEIGHT+ICON_START_Y},
   {START_X,  1*LISTITEM_HEIGHT+ICON_START_Y,  LISTITEM_WIDTH+START_X,  2*LISTITEM_HEIGHT+ICON_START_Y},
   {START_X,  2*LISTITEM_HEIGHT+ICON_START_Y,  LISTITEM_WIDTH+START_X,  3*LISTITEM_HEIGHT+ICON_START_Y},
   {START_X,  3*LISTITEM_HEIGHT+ICON_START_Y,  LISTITEM_WIDTH+START_X,  4*LISTITEM_HEIGHT+ICON_START_Y},
   {START_X,  4*LISTITEM_HEIGHT+ICON_START_Y,  LISTITEM_WIDTH+START_X,  5*LISTITEM_HEIGHT+ICON_START_Y},
 
+  // navigation button area
+  {START_X,                              5*LISTITEM_HEIGHT+ICON_START_Y,  START_X+1*LIST_ICON_WIDTH,    5*LISTITEM_HEIGHT+ICON_START_Y+1*LIST_ICON_HEIGHT},
+  {START_X+1.5*LIST_ICON_WIDTH,          5*LISTITEM_HEIGHT+ICON_START_Y,  START_X+2.5*LIST_ICON_WIDTH,  5*LISTITEM_HEIGHT+ICON_START_Y+1*LIST_ICON_HEIGHT},
+  {LCD_WIDTH-START_X-1*LIST_ICON_WIDTH,  5*LISTITEM_HEIGHT+ICON_START_Y,  LCD_WIDTH-START_X,            5*LISTITEM_HEIGHT+ICON_START_Y+1*LIST_ICON_HEIGHT},
+#else  // Landscape Mode
+  // list area DEFAULT LANDSCAPE GUI
+  {START_X,  0*LISTITEM_HEIGHT+ICON_START_Y,  LISTITEM_WIDTH+START_X,  1*LISTITEM_HEIGHT+ICON_START_Y},
+  {START_X,  1*LISTITEM_HEIGHT+ICON_START_Y,  LISTITEM_WIDTH+START_X,  2*LISTITEM_HEIGHT+ICON_START_Y},
+  {START_X,  2*LISTITEM_HEIGHT+ICON_START_Y,  LISTITEM_WIDTH+START_X,  3*LISTITEM_HEIGHT+ICON_START_Y},
+  {START_X,  3*LISTITEM_HEIGHT+ICON_START_Y,  LISTITEM_WIDTH+START_X,  4*LISTITEM_HEIGHT+ICON_START_Y},
+  {START_X,  4*LISTITEM_HEIGHT+ICON_START_Y,  LISTITEM_WIDTH+START_X,  5*LISTITEM_HEIGHT+ICON_START_Y},
+
+  // navigation button area
   {2*START_X + LISTITEM_WIDTH,  0*LIST_ICON_HEIGHT+0*LISTICON_SPACE_Y+ICON_START_Y,  2*START_X + LISTITEM_WIDTH + 1*LIST_ICON_WIDTH,  1*LIST_ICON_HEIGHT+0*LISTICON_SPACE_Y+ICON_START_Y},
   {2*START_X + LISTITEM_WIDTH,  1*LIST_ICON_HEIGHT+1*LISTICON_SPACE_Y+ICON_START_Y,  2*START_X + LISTITEM_WIDTH + 1*LIST_ICON_WIDTH,  2*LIST_ICON_HEIGHT+1*LISTICON_SPACE_Y+ICON_START_Y},
   {2*START_X + LISTITEM_WIDTH,  2*LIST_ICON_HEIGHT+2*LISTICON_SPACE_Y+ICON_START_Y,  2*START_X + LISTITEM_WIDTH + 1*LIST_ICON_WIDTH,  3*LIST_ICON_HEIGHT+2*LISTICON_SPACE_Y+ICON_START_Y},
-
+#endif
   // title bar area
-  {0 ,0 ,LCD_WIDTH, ICON_START_Y}
+  {0, 0, LCD_WIDTH, ICON_START_Y}
 };
 
 // titlebar touch area
 const GUI_RECT rect_of_titleBar[] = {
-  {0 ,0 ,LCD_WIDTH, ICON_START_Y}
+  {0, 0, LCD_WIDTH, ICON_START_Y}
 };
 
 // Clean up the gaps outside icons
-#ifdef TFT70_V3_0
-
 void menuClearGaps(void)
 {
-  const GUI_RECT gapsMenu[]={
-  {0,                  0,                  LCD_WIDTH,          TITLE_END_Y},
-  {0,                  TITLE_END_Y,        LCD_WIDTH,          rect_of_key[0].y0},
-  {0,                  rect_of_key[0].y0,  rect_of_key[0].x0,  LCD_HEIGHT},
-  {rect_of_key[0].x1,  rect_of_key[0].y0,  rect_of_key[1].x0,  LCD_HEIGHT},
-  {rect_of_key[1].x1,  rect_of_key[0].y0,  rect_of_key[2].x0,  LCD_HEIGHT},
-  {rect_of_key[2].x1,  rect_of_key[0].y0,  rect_of_key[3].x0,  LCD_HEIGHT},
-  {rect_of_key[3].x1,  rect_of_key[0].y0,  LCD_WIDTH,          LCD_HEIGHT}};
+#ifdef TFT70_V3_0
+  const GUI_RECT gapsMenu[] = {
+    {0,                  0,                  LCD_WIDTH,          TITLE_END_Y},
+    {0,                  TITLE_END_Y,        LCD_WIDTH,          rect_of_key[0].y0},
+    {0,                  rect_of_key[0].y0,  rect_of_key[0].x0,  LCD_HEIGHT},
+    {rect_of_key[0].x1,  rect_of_key[0].y0,  rect_of_key[1].x0,  LCD_HEIGHT},
+    {rect_of_key[1].x1,  rect_of_key[0].y0,  rect_of_key[2].x0,  LCD_HEIGHT},
+    {rect_of_key[2].x1,  rect_of_key[0].y0,  rect_of_key[3].x0,  LCD_HEIGHT},
+    {rect_of_key[3].x1,  rect_of_key[0].y0,  LCD_WIDTH,          LCD_HEIGHT}
+  };
 
-  const GUI_RECT gapsSS[]={
-  {0,                   0,                    LCD_WIDTH,            TITLE_END_Y},
-  {0,                   TITLE_END_Y,          LCD_WIDTH,            rect_of_keySS[0].y0},
-  {0,                   rect_of_keySS[0].y0,  rect_of_keySS[0].x0,  LCD_HEIGHT},
-  {rect_of_keySS[4].y0, rect_of_keySS[0].y0,  LCD_WIDTH,            LCD_HEIGHT},
-  // 1ST ROW
-  {rect_of_keySS[0].x1,  rect_of_keySS[0].y0,  rect_of_keySS[1].x0,  rect_of_keySS[0].y1},
-  {rect_of_keySS[1].x1,  rect_of_keySS[0].y0,  rect_of_keySS[2].x0,  rect_of_keySS[0].y1},
-  {rect_of_keySS[2].x1,  rect_of_keySS[0].y0,  rect_of_keySS[3].x0,  rect_of_keySS[0].y1},
-  {rect_of_keySS[3].x1,  rect_of_keySS[0].y0,  rect_of_keySS[4].x0,  rect_of_keySS[0].y1},
-  // gantry rect
-  {rect_of_keySS[0].x0,  rect_of_keySS[0].y1,  rect_of_keySS[7].x0,  rect_of_keySS[7].y0},
-  // 2ND ROW
-  {rect_of_keySS[5].x1,  rect_of_keySS[5].y0,  rect_of_keySS[17].x0,  rect_of_keySS[5].y1},
-  {rect_of_keySS[17].x1,  rect_of_keySS[5].y0,  rect_of_keySS[7].x0,  rect_of_keySS[5].y1}};
+  const GUI_RECT gapsSS[] = {
+    {0,                     0,                    LCD_WIDTH,             TITLE_END_Y},
+    {0,                     TITLE_END_Y,          LCD_WIDTH,             rect_of_keySS[0].y0},
+    {0,                     rect_of_keySS[0].y0,  rect_of_keySS[0].x0,   LCD_HEIGHT},
+    {rect_of_keySS[4].y0,   rect_of_keySS[0].y0,  LCD_WIDTH,             LCD_HEIGHT},
+
+    // 1ST ROW
+    {rect_of_keySS[0].x1,   rect_of_keySS[0].y0,  rect_of_keySS[1].x0,   rect_of_keySS[0].y1},
+    {rect_of_keySS[1].x1,   rect_of_keySS[0].y0,  rect_of_keySS[2].x0,   rect_of_keySS[0].y1},
+    {rect_of_keySS[2].x1,   rect_of_keySS[0].y0,  rect_of_keySS[3].x0,   rect_of_keySS[0].y1},
+    {rect_of_keySS[3].x1,   rect_of_keySS[0].y0,  rect_of_keySS[4].x0,   rect_of_keySS[0].y1},
+
+    // gantry rect
+    {rect_of_keySS[0].x0,   rect_of_keySS[0].y1,  rect_of_keySS[7].x0,   rect_of_keySS[7].y0},
+
+    // 2ND ROW
+    {rect_of_keySS[5].x1,   rect_of_keySS[5].y0,  rect_of_keySS[17].x0,  rect_of_keySS[5].y1},
+    {rect_of_keySS[17].x1,  rect_of_keySS[5].y0,  rect_of_keySS[7].x0,   rect_of_keySS[5].y1}
+  };
 
   GUI_SetBkColor(infoSettings.title_bg_color);
 
-  if (infoMenu.menu[infoMenu.cur] == menuStatus || ((infoMenu.menu[infoMenu.cur] == menuPrinting) && !isPrinting()))
+  if (MENU_IS(menuStatus) || ((MENU_IS(menuPrinting)) && !isPrinting()))
     GUI_ClearPrect(gapsSS);
   else
     GUI_ClearPrect(gapsMenu);
 
   GUI_SetBkColor(infoSettings.bg_color);
 
-  if (infoMenu.menu[infoMenu.cur] == menuStatus || ((infoMenu.menu[infoMenu.cur] == menuPrinting) && !isPrinting()))
+  if (MENU_IS(menuStatus) || ((MENU_IS(menuPrinting)) && !isPrinting()))
   {
     for (uint8_t i = 1; i < COUNT(gapsSS); i++)
     {
@@ -197,12 +456,64 @@ void menuClearGaps(void)
       GUI_ClearPrect(gapsMenu + i);
     }
   }
-}
+#elif defined(PORTRAIT_MODE)  // clear gaps on Portrait Mode except TFT70
+  const GUI_RECT gaps[] = {
+    {0,                  0,                  LCD_WIDTH,          TITLE_END_Y},
+    {0,                  TITLE_END_Y,        LCD_WIDTH,          rect_of_key[0].y0},
 
-#else
+    {0,                  rect_of_key[0].y0,  rect_of_key[0].x0,  rect_of_key[6].y0},
+    {rect_of_key[0].x1,  rect_of_key[0].y0,  rect_of_key[1].x0,  rect_of_key[6].y0},
+    {rect_of_key[1].x1,  rect_of_key[0].y0,  rect_of_key[2].x0,  rect_of_key[6].y0},
+    {rect_of_key[2].x1,  rect_of_key[0].y0,  LCD_WIDTH,          rect_of_key[6].y0},
 
-void menuClearGaps(void)
-{
+    {0,                  rect_of_key[6].y0,  rect_of_key[6].x0,  LCD_HEIGHT},
+    {rect_of_key[6].x1,  rect_of_key[6].y0,  rect_of_key[7].x0,  LCD_HEIGHT},
+    {rect_of_key[7].x1,  rect_of_key[6].y0,  LCD_WIDTH,          LCD_HEIGHT}
+  };
+
+  const GUI_RECT gapsSS[] = {
+    {0,                     0,                     LCD_WIDTH,            TITLE_END_Y},
+    {0,                     TITLE_END_Y,           LCD_WIDTH,            rect_of_keySS[0].y0},
+
+    {0,                     rect_of_keySS[17].y0,  rect_of_keySS[0].x0,  rect_of_keySS[0].y0},
+    {rect_of_keySS[17].x1,  rect_of_keySS[17].y0,  LCD_WIDTH,            rect_of_keySS[0].y0},
+
+    {0,                     rect_of_keySS[0].y0,   rect_of_keySS[0].x0,  LCD_HEIGHT},
+    {rect_of_keySS[0].x1,   rect_of_keySS[0].y0,   rect_of_keySS[1].x0,  LCD_HEIGHT},
+    {rect_of_keySS[1].x1,   rect_of_keySS[0].y0,   rect_of_keySS[2].x0,  LCD_HEIGHT},
+    {rect_of_keySS[2].x1,   rect_of_keySS[0].y0,   LCD_WIDTH,            LCD_HEIGHT},
+  };
+
+  if (MENU_IS(menuPrinting))
+  {
+    GUI_Clear(MENU_BACKGROUND_COLOR);
+  }
+  else if ((MENU_IS(menuStatus)) ||
+           (MENU_IS(menuHeat)) ||
+           (MENU_IS(menuLoadUnload)) ||
+           (MENU_IS(menuPid)) ||
+           (MENU_IS(menuTuneExtruder)) ||
+           (MENU_IS(menuFan)) ||
+           (MENU_IS(menuExtrude)) ||
+           (MENU_IS(menuSpeed)) ||
+           (MENU_IS(menuZOffset)) ||
+           (MENU_IS(menuMBL)) ||
+           (MENU_IS(menuBabystep)) ||
+           (MENU_IS(menuMeshEditor)))
+  {
+    GUI_ClearPrect(gapsSS);
+    GUI_SetBkColor(infoSettings.bg_color);
+    for (uint8_t i = 1; i < COUNT(gapsSS); i++)
+      GUI_ClearPrect(gapsSS + i);
+  }
+  else
+  {
+    GUI_ClearPrect(gaps);
+    GUI_SetBkColor(infoSettings.bg_color);
+    for (uint8_t i = 1; i < COUNT(gaps); i++)
+      GUI_ClearPrect(gaps + i);
+  }
+#else  // clear gaps on Landscape Mode except TFT70
   const GUI_RECT gaps[] = {
     {0,                  0,                  LCD_WIDTH,          TITLE_END_Y},
     {0,                  TITLE_END_Y,        LCD_WIDTH,          rect_of_key[0].y0},
@@ -218,8 +529,8 @@ void menuClearGaps(void)
   GUI_SetBkColor(infoSettings.bg_color);
   for (uint8_t i = 1; i < COUNT(gaps); i++)
     GUI_ClearPrect(gaps + i);
-}
 #endif
+}
 
 void GUI_RestoreColorDefault(void)
 {
@@ -240,8 +551,8 @@ static LABEL * curTitle = NULL;
 static const GUI_RECT *curRect = NULL;  // current menu layout grid
 static uint16_t curRectCount = 0;       // current menu layout rect count
 
-static REMINDER reminder = {{0, 0, LCD_WIDTH, TITLE_END_Y}, 0, STATUS_UNCONNECT, LABEL_UNCONNECTED};
-static REMINDER volumeReminder = {{0, 0, LCD_WIDTH, TITLE_END_Y}, 0, STATUS_IDLE, LABEL_BACKGROUND};
+static REMINDER reminder = {{0, 0, LCD_WIDTH, TITLE_END_Y}, 0, STATUS_DISCONNECTED, LABEL_UNCONNECTED};
+static REMINDER volumeReminder = {{0, 0, LCD_WIDTH, TITLE_END_Y}, 0, STATUS_IDLE, LABEL_NULL};
 static REMINDER busySign = {{LCD_WIDTH - 5, 0, LCD_WIDTH, 5}, 0, STATUS_BUSY, LABEL_BUSY};
 
 MENUITEMS *getCurMenuItems(void)
@@ -254,9 +565,16 @@ LISTITEMS *getCurListItems(void)
   return (LISTITEMS *)curListItems;
 }
 
+// Get the top left point of the corresponding icon position)
+GUI_POINT getIconStartPoint(int index)
+{
+  GUI_POINT p = {curRect[index].x0, curRect[index].y0};
+  return p;
+}
+
 uint8_t *labelGetAddress(const LABEL *label)
 {
-  if (label->index == LABEL_BACKGROUND)  // No content in label
+  if (label->index == LABEL_NULL)  // No content in label
     return NULL;
   if (label->index < LABEL_NUM)  // Index of language
     return textSelect(label->index);
@@ -273,7 +591,7 @@ void menuDrawItem(const ITEM *item, uint8_t position)
 void menuDrawIconOnly(const ITEM *item, uint8_t position)
 {
   const GUI_RECT *rect = curRect + position;
-  if (item->icon != ICON_BACKGROUND)
+  if (item->icon != ICON_NULL)
     ICON_ReadDisplay(rect->x0, rect->y0, item->icon);
   else
     GUI_ClearPrect(rect);
@@ -288,10 +606,10 @@ void menuDrawIconText(const ITEM *item, uint8_t position)
     GUI_DispStringInPrect(rect, content);
 }
 
- void menuDrawListItem(const LISTITEM *item, uint8_t position)
+void menuDrawListItem(const LISTITEM *item, uint8_t position)
 {
   const GUI_RECT *rect = rect_of_keyListView + position;
-  if (item->icon == CHARICON_BACKGROUND)
+  if (item->icon == CHARICON_NULL)
   {
     GUI_ClearPrect(rect);
   }
@@ -320,7 +638,9 @@ MENU_TYPE getMenuType(void)
   return menuType;
 }
 
-void setMenu(MENU_TYPE menu_type, LABEL * title, uint16_t rectCount, const GUI_RECT * menuRect, void(*action_redraw)(uint8_t position, uint8_t is_press), void (* menu_redraw)(void))
+void setMenu(MENU_TYPE menu_type, LABEL * title, uint16_t rectCount, const GUI_RECT * menuRect,
+             void(*action_redraw)(uint8_t position, uint8_t is_press),
+             void (*menu_redraw)(void))
 {
   menuType = menu_type;
   curRect = menuRect;
@@ -328,12 +648,10 @@ void setMenu(MENU_TYPE menu_type, LABEL * title, uint16_t rectCount, const GUI_R
   curTitle = title;
   TSC_ReDrawIcon = action_redraw;
   curMenuRedrawHandle = menu_redraw;
-}
 
-void reminderSetUnConnected(void)
-{
-  reminder.status = STATUS_UNCONNECT;
-  reminder.inf = LABEL_UNCONNECTED;
+  #if LCD_ENCODER_SUPPORT
+    encoderPosition = 0;
+  #endif
 }
 
 void reminderMessage(int16_t inf, SYS_STATUS status)
@@ -355,7 +673,8 @@ void reminderMessage(int16_t inf, SYS_STATUS status)
 
 void volumeReminderMessage(int16_t inf, SYS_STATUS status)
 {
-  wakeLCD();
+  LCD_WAKE();
+
   if (toastRunning()) return;
 
   volumeReminder.inf = inf;
@@ -364,7 +683,7 @@ void volumeReminderMessage(int16_t inf, SYS_STATUS status)
 
   if (menuType != MENU_TYPE_FULLSCREEN)
   {
-    GUI_SetColor(infoSettings.sd_reminder_color);
+    GUI_SetColor(infoSettings.status_color);
     GUI_SetBkColor(infoSettings.title_bg_color);
     GUI_DispStringInPrect(&volumeReminder.rect, volumeReminder.inf);
     GUI_RestoreColorDefault();
@@ -375,7 +694,7 @@ void busyIndicator(SYS_STATUS status)
 {
   if (status == STATUS_BUSY)
   {
-    GUI_SetColor(YELLOW);
+    GUI_SetColor(MENU_BUSY_DOT_COLOR);
     GUI_FillCircle(busySign.rect.x0, (busySign.rect.y1 - busySign.rect.y0) / 2, (busySign.rect.x1-busySign.rect.x0) / 2);
     GUI_SetColor(infoSettings.font_color);
   }
@@ -391,12 +710,17 @@ void loopReminderClear(void)
       return;
 
     case STATUS_BUSY:
-      if (infoCmd.count == CMD_MAX_LIST)
+      if (isFullCmdQueue())
         return;
       break;
 
-    case STATUS_UNCONNECT:
+    case STATUS_DISCONNECTED:
       if (infoHost.connected == false)
+        return;
+      break;
+
+    case STATUS_LISTENING:
+      if (GET_BIT(infoSettings.general_settings, INDEX_LISTENING_MODE) == 1)
         return;
       break;
 
@@ -502,7 +826,7 @@ void menuReDrawCurTitle(void)
   {
     if (curListItems == NULL)
       return;
-    if (curListItems->title.index < LABEL_BACKGROUND)
+    if (curListItems->title.index < LABEL_NULL)
       menuDrawTitle(labelGetAddress(&curListItems->title));
   }
   else if (menuType == MENU_TYPE_ICON)
@@ -528,19 +852,44 @@ void menuDrawPage(const MENUITEMS *menuItems)
   uint8_t i = 0;
   menuType = MENU_TYPE_ICON;
   curMenuItems = menuItems;
-  TSC_ReDrawIcon = itemDrawIconPress;
+  TSC_ReDrawIcon = (MENU_IS(menuPrinting)) ? itemDrawIconPress_PS : itemDrawIconPress;
   curMenuRedrawHandle = NULL;
 
-  curRect = ((infoMenu.menu[infoMenu.cur] == menuStatus) ||
-             ((infoMenu.menu[infoMenu.cur] == menuPrinting) && !isPrinting())) ? rect_of_keySS : rect_of_key;
+  #ifdef PORTRAIT_MODE
+    if (MENU_IS(menuPrinting))
+      curRect = rect_of_keyPS_draw;
+    else if (MENU_IS(menuStatus))
+      curRect = rect_of_keySS;
+    else if ((MENU_IS(menuHeat)) ||
+             (MENU_IS(menuLoadUnload)) ||
+             (MENU_IS(menuPid)) ||
+             (MENU_IS(menuTuneExtruder)) ||
+             (MENU_IS(menuFan)) ||
+             (MENU_IS(menuExtrude)) ||
+             (MENU_IS(menuSpeed)) ||
+             (MENU_IS(menuZOffset)) ||
+             (MENU_IS(menuMBL)) ||
+             (MENU_IS(menuBabystep)) ||
+             (MENU_IS(menuMeshEditor)))
+      curRect = rect_of_keysIN;
+    else
+      curRect = rect_of_key;
+  #else
+    curRect = (MENU_IS(menuStatus)) ? rect_of_keySS : rect_of_key;
+  #endif
 
   menuClearGaps();  // Use this function instead of GUI_Clear to eliminate the splash screen when clearing the screen.
   menuDrawTitle(labelGetAddress(&menuItems->title));
+
   for (i = 0; i < ITEM_PER_PAGE; i++)
   {
     menuDrawItem(&menuItems->items[i], i);
     RAPID_PRINTING_COMM()  // perform backend printing loop between drawing icons to avoid printer idling
   }
+
+  #if LCD_ENCODER_SUPPORT
+    encoderPosition = 0;
+  #endif
 }
 
 // Draw the entire interface
@@ -563,26 +912,26 @@ void menuDrawListPage(const LISTITEMS *listItems)
   for (i = 0; i < ITEM_PER_PAGE; i++)
   {
     //const GUI_RECT *rect = rect_of_keyListView + i;
-    if (curListItems->items[i].icon != CHARICON_BACKGROUND)
+    if (curListItems->items[i].icon != CHARICON_NULL)
       menuDrawListItem(&curListItems->items[i], i);
     RAPID_PRINTING_COMM()  // perform backend printing loop between drawing icons to avoid printer idling
   }
+
+  #if LCD_ENCODER_SUPPORT
+    encoderPosition = 0;
+  #endif
 }
 
 // Show live info text on icons
 void showLiveInfo(uint8_t index, const LIVE_INFO * liveicon, const ITEM * item)
 {
   if (item != NULL)
-    menuDrawIconOnly(item,index);
+    ICON_PrepareRead(curRect[index].x0, curRect[index].y0, item->icon);
 
   for (uint8_t i = 0; i < LIVEICON_LINES; i++)
   {
     if (liveicon->enabled[i] == true)
     {
-      GUI_SetColor(liveicon->lines[i].fn_color);
-      GUI_SetBkColor(liveicon->lines[i].bk_color);
-      GUI_SetTextMode(liveicon->lines[i].text_mode);
-
       GUI_POINT loc;
       loc.x = liveicon->lines[i].pos.x + curRect[index].x0;
 
@@ -599,6 +948,13 @@ void showLiveInfo(uint8_t index, const LIVE_INFO * liveicon, const ITEM * item)
         loc.y = liveicon->lines[i].pos.y + curRect[index].y0;
       }
 
+      if (item == NULL)  // if no icon used as background, set own bg color and text mode
+      {
+        GUI_SetTextMode(liveicon->lines[i].text_mode);
+        GUI_SetBkColor(liveicon->lines[i].bk_color);
+      }
+
+      GUI_SetColor(liveicon->lines[i].fn_color);
       setFontSize(liveicon->lines[i].font);
 
       switch (liveicon->lines[i].h_align)
@@ -620,8 +976,39 @@ void showLiveInfo(uint8_t index, const LIVE_INFO * liveicon, const ITEM * item)
       }
     }
   }
+
   GUI_RestoreColorDefault();
+
+  if (item != NULL)
+    ICON_PrepareReadEnd();
 }  // showLiveInfo
+
+void displayExhibitHeader(const char * titleStr, const char * unitStr)
+{
+  // draw header title
+  if (titleStr != NULL)
+  {
+    char tempstr[20];
+    sprintf(tempstr, "%-8s", titleStr);
+    GUI_DispString(exhibitRect.x0, exhibitRect.y0, (uint8_t *)tempstr);
+  }
+
+  // draw unit string
+  if (unitStr != NULL)
+  {
+    setFontSize(FONT_SIZE_LARGE);
+    GUI_DispStringCenter((exhibitRect.x0 + exhibitRect.x1) >> 1, exhibitRect.y0, (uint8_t *)unitStr);
+  }
+
+  setFontSize(FONT_SIZE_NORMAL);
+}
+
+void displayExhibitValue(const char * valueStr)
+{
+  setFontSize(FONT_SIZE_LARGE);
+  GUI_DispStringInPrect(&exhibitRect, (uint8_t *) valueStr);
+  setFontSize(FONT_SIZE_NORMAL);
+}
 
 // When there is a button value, the icon changes color and redraws
 void itemDrawIconPress(uint8_t position, uint8_t is_press)
@@ -631,7 +1018,7 @@ void itemDrawIconPress(uint8_t position, uint8_t is_press)
   if (menuType == MENU_TYPE_ICON)
   {
     if (curMenuItems == NULL) return;
-    if (curMenuItems->items[position].icon == ICON_BACKGROUND) return;
+    if (curMenuItems->items[position].icon == ICON_NULL) return;
 
     const GUI_RECT *rect = curRect + position;
 
@@ -647,7 +1034,7 @@ void itemDrawIconPress(uint8_t position, uint8_t is_press)
 
     const GUI_RECT *rect = rect_of_keyListView + position;
 
-    if (curListItems->items[position].icon == CHARICON_BACKGROUND)
+    if (curListItems->items[position].icon == CHARICON_NULL)
     {
       GUI_ClearPrect(rect);
       return;
@@ -659,142 +1046,189 @@ void itemDrawIconPress(uint8_t position, uint8_t is_press)
   }
 }
 
+// When there is a button value, the icon changes color and redraws
+void itemDrawIconPress_PS(uint8_t position, uint8_t is_press)
+{
+  if (position < PS_KEY_6 || position > PS_KEY_9) return;
+  position -= PS_TOUCH_OFFSET;
+
+  const GUI_RECT *rect = curRect + position;
+
+  if (is_press)  // Turn green when pressed
+    ICON_PressedDisplay(rect->x0, rect->y0, curMenuItems->items[position].icon);
+  else  // Redraw normal icon when released
+    ICON_ReadDisplay(rect->x0, rect->y0,curMenuItems->items[position].icon);
+}
+
 // Get button value
 KEY_VALUES menuKeyGetValue(void)
 {
   KEY_VALUES tempkey = KEY_IDLE;
 
-  if (menuType == MENU_TYPE_ICON)
+  if (tempkey == KEY_IDLE)
   {
-    if ((infoMenu.menu[infoMenu.cur] == menuStatus) || ((infoMenu.menu[infoMenu.cur] == menuPrinting) && !isPrinting()))
+    switch (menuType)
     {
-      tempkey = (KEY_VALUES)KEY_GetValue(COUNT(rect_of_keySS), rect_of_keySS);
-    }
-    else if ((infoMenu.menu[infoMenu.cur] == menuHeat) ||
-             (infoMenu.menu[infoMenu.cur] == menuPid) ||
-             (infoMenu.menu[infoMenu.cur] == menuTuneExtruder) ||
-             (infoMenu.menu[infoMenu.cur] == menuFan) ||
-             (infoMenu.menu[infoMenu.cur] == menuExtrude) ||
-             (infoMenu.menu[infoMenu.cur] == menuSpeed) ||
-             (infoMenu.menu[infoMenu.cur] == menuZOffset) ||
-             (infoMenu.menu[infoMenu.cur] == menuMBL))
-    {
-      tempkey = (KEY_VALUES)KEY_GetValue(COUNT(rect_of_keysIN), rect_of_keysIN);
-    }
-    else
-    {
-      tempkey = (KEY_VALUES)KEY_GetValue(COUNT(rect_of_key), rect_of_key);
-    }
-  }
-  else if (menuType == MENU_TYPE_LISTVIEW)
-  {
-    tempkey = (KEY_VALUES)KEY_GetValue(COUNT(rect_of_keyListView), rect_of_keyListView);  // for listview
-  }
-  else if (menuType == MENU_TYPE_OTHER)
-  {
-    if ((KEY_VALUES)KEY_GetValue(1, rect_of_titleBar) == 0)
-      tempkey = KEY_TITLEBAR;
-    else
-      return(KEY_VALUES)KEY_GetValue(curRectCount, curRect);
-  }
-  else if (menuType == MENU_TYPE_FULLSCREEN)
-  {
-    return tempkey = (KEY_VALUES)KEY_GetValue(curRectCount, curRect);
-  }
-  // catch titlebar press to enable it on every menu
-  if (tempkey == KEY_TITLEBAR)
-  {
-    titleBarPress();
-    return KEY_IDLE;
-  }
-  else
-  {
-    return tempkey;
-  }
-}
-
-// Get the top left point of the corresponding icon position)
-GUI_POINT getIconStartPoint(int index)
-{
-  GUI_POINT p = {curRect[index].x0, curRect[index].y0};
-  return p;
-}
-
-#ifdef SMART_HOME
-  #define LONG_TOUCH (LCD_CHANGE_MODE_INTERVALS / 3)  // keep it lower than LCD_CHANGE_MODE_INTERVALS
-  void loopCheckBack(void)
-  {
-    static bool longPress = false;
-    #ifdef HAS_EMULATOR
-    static bool backHeld = false;
-    #endif
-
-    if (!isPress())
-    {
-      #ifdef HAS_EMULATOR
-      backHeld = false;
-      #endif
-      longPress = false;
-      #ifndef HAS_EMULATOR
-      LCD_ReadPen(0);  // reset TSC press timer
-      #endif
-      return;
-    }
-    if (isPrinting())  // no jump to main menu while printing
-      return;
-    if (menuType != MENU_TYPE_ICON)
-      return;
-    if ((infoMenu.cur == 0) || (infoMenu.menu[infoMenu.cur] == menuMode))
-      return;
-    #ifdef HAS_EMULATOR
-    if (backHeld == true)  // prevent mode selection or screenshot if Back button is held
-    {
-      backHeld = LCD_ReadPen(0);
-      return;
-    }
-    #endif
-
-    if (longPress == false)  // check if longpress already handled
-    {
-      if (LCD_ReadPen(LONG_TOUCH))  // check if TSC is pressed and held
-      {
-        longPress = true;
-        touchSound = false;
-        KEY_VALUES tempKey = KEY_IDLE;
-
-        if (infoMenu.menu[infoMenu.cur] == menuPrinting)
+      case MENU_TYPE_ICON:
         {
-          tempKey = Key_value(COUNT(rect_of_keySS), rect_of_keySS);
-        }
-        else
-        {
-          tempKey = Key_value(COUNT(rect_of_key), rect_of_key);
-        }
-        touchSound = true;
-
-        if (tempKey != KEY_IDLE)
-        {
-          if (curMenuItems->items[tempKey].label.index != LABEL_BACK)  // check if Back button is held
+          if (MENU_IS(menuStatus))
           {
-            return;
+            tempkey = (KEY_VALUES)KEY_GetValue(COUNT(rect_of_keySS), rect_of_keySS);
+          }
+          else if(MENU_IS(menuPrinting))
+          {
+            if(isPrinting() || infoHost.printing == true)
+              tempkey = (KEY_VALUES)KEY_GetValue(COUNT(rect_of_keyPS), rect_of_keyPS);
+            else
+              tempkey = (KEY_VALUES)KEY_GetValue(COUNT(rect_of_keyPS_end), rect_of_keyPS_end);
+
+            if (tempkey == (KEY_VALUES)PS_KEY_TITLEBAR)
+              tempkey = KEY_TITLEBAR;
+          }
+          else if ((MENU_IS(menuHeat)) ||
+                   (MENU_IS(menuLoadUnload)) ||
+                   (MENU_IS(menuPid)) ||
+                   (MENU_IS(menuTuneExtruder)) ||
+                   (MENU_IS(menuFan)) ||
+                   (MENU_IS(menuExtrude)) ||
+                   (MENU_IS(menuSpeed)) ||
+                   (MENU_IS(menuZOffset)) ||
+                   (MENU_IS(menuMBL)) ||
+                   (MENU_IS(menuBabystep)) ||
+                   (MENU_IS(menuMeshEditor)))
+          {
+            tempkey = (KEY_VALUES)KEY_GetValue(COUNT(rect_of_keysIN), rect_of_keysIN);
           }
           else
           {
-            BUZZER_PLAY(sound_ok);
-            #ifdef HAS_EMULATOR
-            backHeld = true;
-            #endif
-            infoMenu.menu[1] = infoMenu.menu[infoMenu.cur];  // prepare menu tree for jump to 0
-            infoMenu.cur = 1;
-            if (infoMenu.menu[1] == menuPrinting)
-              clearInfoFile();
+            tempkey = (KEY_VALUES)KEY_GetValue(COUNT(rect_of_key), rect_of_key);
           }
+        }
+        break;
+
+      case MENU_TYPE_LISTVIEW:
+        tempkey = (KEY_VALUES)KEY_GetValue(COUNT(rect_of_keyListView), rect_of_keyListView);
+
+        if (tempkey == ITEM_PER_PAGE)
+          tempkey = KEY_TITLEBAR;
+        break;
+
+      case MENU_TYPE_OTHER:
+        if ((KEY_VALUES)KEY_GetValue(1, rect_of_titleBar) == 0)
+          tempkey = KEY_TITLEBAR;
+        else
+          tempkey = (KEY_VALUES)KEY_GetValue(curRectCount, curRect);
+        break;
+
+      case MENU_TYPE_FULLSCREEN:
+      default:
+        tempkey = (KEY_VALUES)KEY_GetValue(curRectCount, curRect);
+        break;
+    }
+  }
+
+  if (menuType != MENU_TYPE_FULLSCREEN && tempkey == KEY_TITLEBAR)
+  {
+    titleBarPress();
+    tempkey = KEY_IDLE;
+  }
+
+  #if LCD_ENCODER_SUPPORT
+    if (tempkey == KEY_IDLE)
+      tempkey = LCD_Enc_KeyValue();
+  #endif
+
+  return tempkey;
+}
+
+// Smart home (long press on back button to go to status screen)
+#ifdef SMART_HOME
+
+void loopCheckBackPress(void)
+{
+  static bool longPress = false;
+
+  #ifdef HAS_EMULATOR
+    static bool backHeld = false;
+  #endif
+
+  if (!isPress())
+  {
+    longPress = false;
+
+    #ifdef HAS_EMULATOR
+      backHeld = false;
+    #else
+      Touch_Enc_ReadPen(0);  // reset TSC press timer
+    #endif
+
+    return;
+  }
+
+  if (isPrinting())  // no jump to main menu while printing
+    return;
+
+  if (getMenuType() != MENU_TYPE_ICON)
+    return;
+
+  if ((infoMenu.cur == 0) || (MENU_IS(menuMode)))
+    return;
+
+  #ifdef HAS_EMULATOR
+    if (backHeld == true)  // prevent mode selection or screenshot if Back button is held
+    {
+      backHeld = Touch_Enc_ReadPen(0);
+      return;
+    }
+  #endif
+
+  if (longPress == false)  // check if longpress already handled
+  {
+    if (Touch_Enc_ReadPen(LONG_TOUCH))  // check if TSC is pressed and held
+    {
+      KEY_VALUES tempKey = KEY_IDLE;
+      longPress = true;
+      touchSound = false;
+
+      if (MENU_IS(menuPrinting))
+      {
+        tempKey = Key_value(COUNT(rect_of_keySS), rect_of_keySS);
+      }
+      else
+      {
+        tempKey = Key_value(COUNT(rect_of_key), rect_of_key);
+      }
+
+      touchSound = true;
+
+      if (tempKey != KEY_IDLE)
+      {
+        if (getCurMenuItems()->items[tempKey].label.index != LABEL_BACK)  // check if Back button is held
+        {
+          return;
+        }
+        else
+        {
+          BUZZER_PLAY(SOUND_OK);
+
+          #ifdef HAS_EMULATOR
+            backHeld = true;
+          #endif
+
+          infoMenu.menu[1] = infoMenu.menu[infoMenu.cur];  // prepare menu tree for jump to 0
+          infoMenu.cur = 1;
+
+          if (infoMenu.menu[1] == menuPrinting)
+            clearInfoFile();
         }
       }
     }
   }
+}
+
 #endif  // SMART_HOME
 
+// Non-UI background loop tasks
 void loopBackEnd(void)
 {
   // Get Gcode command from the file to be printed
@@ -803,68 +1237,86 @@ void loopBackEnd(void)
   sendQueueCmd();
   // Parse the received slave response information
   parseACK();
-  // Parse the received Gcode from other UART, such as: ESP3D, etc...
-  parseRcvGcode();
+
+  if (GET_BIT(infoSettings.general_settings, INDEX_FILE_COMMENT_PARSING) == 1)  // if file comment parsing is enabled
+  {
+    parseComment();  // Parse comment from gCode file
+  }
+
+  #ifdef SERIAL_PORT_2
+    // Parse the received Gcode from other UART, such as: ESP3D, etc...
+    parseRcvGcode();
+  #endif
+
   // Temperature monitor
   loopCheckHeater();
   // Fan speed monitor
   loopFan();
   // Speed & flow monitor
   loopSpeed();
-#ifdef SMART_HOME
-  // check if Back is pressed and held
-  loopCheckBack();
-#endif
-#ifdef BUZZER_PIN
-  // Buzzer handling
-  loopBuzzer();
-#endif
 
-  if (infoMachineSettings.onboard_sd_support == ENABLED)
-  {
-    loopPrintFromHost();  // handle a print from onboard SD or remote host, if any
-  }
-
-#ifdef U_DISK_SUPPORT
-  USBH_Process(&USB_OTG_Core, &USB_Host);
-#endif
-
-#if defined(SCREEN_SHOT_TO_SD)
-  loopScreenShot();
-#endif
-
-#if LCD_ENCODER_SUPPORT
-  #ifdef HAS_EMULATOR
-  if (infoMenu.menu[infoMenu.cur] != menuMarlinMode)
+  #ifdef BUZZER_PIN
+    // Buzzer handling
+    loopBuzzer();
   #endif
+
+  if (infoMachineSettings.onboardSD == ENABLED)
   {
-    loopCheckEncoderSteps();  // check change in encoder steps
+    loopPrintFromOnboardSD();  // handle a print from (remote) onboard SD, if any
   }
-#endif
 
-#ifdef HAS_EMULATOR
-  loopCheckMode();
-#endif
+  #ifdef U_DISK_SUPPORT
+    USBH_Process(&USB_OTG_Core, &USB_Host);
+  #endif
 
-#ifdef FIL_RUNOUT_PIN
-  loopBackEndFILRunoutDetect();
-#endif
+  #ifdef FIL_RUNOUT_PIN
+    FIL_BE_CheckRunout();
+  #endif
 
-#ifdef LCD_LED_PWM_CHANNEL
-  loopDimTimer();
-#endif
+  #if LCD_ENCODER_SUPPORT
+    #ifdef HAS_EMULATOR
+      if (MENU_IS_NOT(menuMarlinMode))
+    #endif
+    {
+      LCD_Enc_CheckSteps();  // check change in encoder steps
+    }
+  #endif
+
+  #ifdef HAS_EMULATOR
+    Mode_CheckSwitching();
+  #endif
+
+  #ifdef SCREEN_SHOT_TO_SD
+    loopScreenShot();
+  #endif
+
+  #ifdef SMART_HOME
+    // check if Back is pressed and held
+    loopCheckBackPress();
+  #endif
+
+  #ifdef LCD_LED_PWM_CHANNEL
+    LCD_CheckDimming();
+  #endif
+
+  if (GET_BIT(infoSettings.general_settings, INDEX_EVENT_LED) == 1)
+    LED_CheckEvent();
 
   if (infoMachineSettings.caseLightsBrightness == ENABLED)
   {
     loopCaseLight();
   }
+
+  // Query RRF status
+  rrfStatusQuery();
 }  // loopBackEnd
 
+// UI-related background loop tasks
 void loopFrontEnd(void)
 {
   // Check if volume source(SD/U disk) insert
   loopVolumeSource();
-  // loop to check and run toast messages
+  // Loop to check and run toast messages
   loopToast();
   // If there is a message in the status bar, timed clear
   loopReminderClear();
@@ -874,12 +1326,12 @@ void loopFrontEnd(void)
   // Check update temperature status
   loopTemperatureStatus();
 
-#ifdef FIL_RUNOUT_PIN
-  // Loop for filament runout detection
-  loopFrontEndFILRunoutDetect();
-#endif
+  #ifdef FIL_RUNOUT_PIN
+    // Loop for filament runout detection
+    FIL_FE_CheckRunout();
+  #endif
 
-  // loop for popup menu
+  // Loop for popup menu
   loopPopup();
 }
 
@@ -891,7 +1343,7 @@ void loopProcess(void)
 
 void menuDummy(void)
 {
-  infoMenu.cur--;
+  CLOSE_MENU();
 }
 
 void loopProcessToCondition(CONDITION_CALLBACK condCallback)
@@ -911,5 +1363,5 @@ void loopProcessToCondition(CONDITION_CALLBACK condCallback)
   }
 
   if (invokedUI)  // if a UI was invoked, load a dummy menu just to force the caller also to refresh its menu
-    infoMenu.menu[++infoMenu.cur] = menuDummy;
+    OPEN_MENU(menuDummy);
 }

@@ -22,7 +22,7 @@ void menuCustom(void)
 
   listViewCreate(title, customItems, customcodes.count, NULL, true, NULL, NULL);
 
-  while (infoMenu.menu[infoMenu.cur] == menuCustom)
+  while (MENU_IS(menuCustom))
   {
     curIndex = listViewGetSelectedIndex();
 
@@ -45,10 +45,10 @@ void menuEepromSettings(void)
       {ICON_EEPROM_SAVE,     LABEL_SAVE},
       {ICON_EEPROM_RESTORE,  LABEL_RESTORE},
       {ICON_EEPROM_RESET,    LABEL_RESET},
-      {ICON_BACKGROUND,      LABEL_BACKGROUND},
-      {ICON_BACKGROUND,      LABEL_BACKGROUND},
-      {ICON_BACKGROUND,      LABEL_BACKGROUND},
-      {ICON_BACKGROUND,      LABEL_BACKGROUND},
+      {ICON_NULL,            LABEL_NULL},
+      {ICON_NULL,            LABEL_NULL},
+      {ICON_NULL,            LABEL_NULL},
+      {ICON_NULL,            LABEL_NULL},
       {ICON_BACK,            LABEL_BACK},
     }
   };
@@ -57,7 +57,7 @@ void menuEepromSettings(void)
 
   menuDrawPage(&eepromSettingsItems);
 
-  while (infoMenu.menu[infoMenu.cur] == menuEepromSettings)
+  while (MENU_IS(menuEepromSettings))
   {
     curIndex = menuKeyGetValue();
     switch (curIndex)
@@ -90,7 +90,7 @@ void menuEepromSettings(void)
         break;
 
       case KEY_ICON_7:
-        infoMenu.cur--;
+        CLOSE_MENU();
         break;
 
       default:
@@ -111,7 +111,7 @@ void menuMachineSettings(void)
     LABEL_MACHINE_SETTINGS,
     // icon                          label
     {
-      {ICON_PARAMETER,               LABEL_PARAMETER_SETTING},
+      {ICON_PARAMETER,               LABEL_PARAMETER_SETTINGS},
       {ICON_GCODE,                   LABEL_TERMINAL},
       {ICON_CUSTOM,                  LABEL_CUSTOM},
       {ICON_RGB_SETTINGS,            LABEL_RGB_SETTINGS},
@@ -119,12 +119,18 @@ void menuMachineSettings(void)
       #ifdef QUICK_EEPROM_BUTTON
         {ICON_EEPROM_SAVE,             LABEL_EEPROM_SETTINGS},
       #else
-        {ICON_BACKGROUND,              LABEL_BACKGROUND},
+        {ICON_NULL,                    LABEL_NULL},
       #endif
-      {ICON_BACKGROUND,              LABEL_BACKGROUND},
+      {ICON_NULL,                    LABEL_NULL},
       {ICON_BACK,                    LABEL_BACK},
     }
   };
+
+  if (infoMachineSettings.firmwareType == FW_REPRAPFW)
+  {
+    ITEM no_custom = { ICON_NULL, LABEL_NULL };
+    machineSettingsItems.items[2] = no_custom;
+  }
 
   KEY_VALUES curIndex = KEY_IDLE;
   const ITEM itemCaseLight = {ICON_CASE_LIGHT, LABEL_CASE_LIGHT};
@@ -134,44 +140,45 @@ void menuMachineSettings(void)
 
   menuDrawPage(&machineSettingsItems);
 
-  while (infoMenu.menu[infoMenu.cur] == menuMachineSettings)
+  while (MENU_IS(menuMachineSettings))
   {
     curIndex = menuKeyGetValue();
     switch (curIndex)
     {
       case KEY_ICON_0:
-        infoMenu.menu[++infoMenu.cur] = menuParameterSettings;
+        OPEN_MENU(menuParameterSettings);
         break;
 
       case KEY_ICON_1:
-        infoMenu.menu[++infoMenu.cur] = menuTerminal;
+        OPEN_MENU(menuTerminal);
         break;
 
       case KEY_ICON_2:
-        infoMenu.menu[++infoMenu.cur] = menuCustom;
+        if (infoMachineSettings.firmwareType != FW_REPRAPFW)
+          OPEN_MENU(menuCustom);
         break;
 
       case KEY_ICON_3:
-        infoMenu.menu[++infoMenu.cur] = menuLEDColor;
+        OPEN_MENU(menuLEDColor);
         break;
 
       case KEY_ICON_4:
-        infoMenu.menu[++infoMenu.cur] = menuTuning;
+        OPEN_MENU(menuTuning);
         break;
 
       #ifdef QUICK_EEPROM_BUTTON
         case KEY_ICON_5:
-          infoMenu.menu[++infoMenu.cur] = menuEepromSettings;
+          OPEN_MENU(menuEepromSettings);
           break;
       #endif
 
       case KEY_ICON_6:
         if (infoMachineSettings.caseLightsBrightness == ENABLED)
-          infoMenu.menu[++infoMenu.cur] = menuCaseLight;
+          OPEN_MENU(menuCaseLight);
         break;
 
       case KEY_ICON_7:
-        infoMenu.cur--;
+        CLOSE_MENU();
         break;
 
       default:

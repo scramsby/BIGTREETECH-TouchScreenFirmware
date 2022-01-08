@@ -5,14 +5,14 @@ static float z_offset_value = HOME_Z_OFFSET_DEFAULT_VALUE;
 static bool home_offset_enabled = false;
 
 // Enable home offset
-void homeOffsetEnable(bool skipZOffset, float shim)
+void homeOffsetEnable(float shim)
 {
   home_offset_enabled = true;
 
-  probeHeightEnable();  // temporary disable software endstops
+  probeHeightEnable();  // temporary disable software endstops and save ABL state
 
   // Z offset gcode sequence start
-  mustStoreCmd("G28\n");          // home printer
+  probeHeightHomeAndNoABL();      // home and disable ABL
   probeHeightStart(shim, false);  // lower nozzle to absolute Z0 point + shim
   probeHeightRelative();          // set relative position mode
 }
@@ -23,10 +23,10 @@ void homeOffsetDisable(void)
   home_offset_enabled = false;
 
   // Z offset gcode sequence stop
-  mustStoreCmd("G28\n");  // home printer
-  probeHeightAbsolute();  // set absolute position mode
+  probeHeightHomeAndNoABL();  // home and disable ABL
+  probeHeightAbsolute();      // set absolute position mode
 
-  probeHeightDisable();  // restore original software endstops state
+  probeHeightDisable();  // restore original software endstops state and ABL state
 }
 
 // Get home offset status
@@ -38,7 +38,7 @@ bool homeOffsetGetStatus(void)
 // Set Z offset value
 float homeOffsetSetValue(float value)
 {
-  mustStoreCmd("M206 Z%.2f\n", value);
+  sendParameterCmd(P_HOME_OFFSET, AXIS_INDEX_Z, value);
   mustStoreCmd("M206\n");  // needed by homeOffsetResetValue() to retrieve the new value
   z_offset_value = value;
 
@@ -62,8 +62,8 @@ float homeOffsetResetValue(void)
   float unit = z_offset_value - HOME_Z_OFFSET_DEFAULT_VALUE;
 
   z_offset_value = HOME_Z_OFFSET_DEFAULT_VALUE;
-  mustStoreCmd("M206 Z%.2f\n", z_offset_value);  // set Z offset value
-  mustStoreCmd("G1 Z%.2f\n", unit);              // move nozzle
+  sendParameterCmd(P_HOME_OFFSET, AXIS_INDEX_Z, z_offset_value);  // set Z offset value
+  mustStoreCmd("G1 Z%.2f\n", unit);                               // move nozzle
 
   return z_offset_value;
 }
@@ -90,8 +90,8 @@ float homeOffsetUpdateValue(float unit, int8_t direction)
 
   unit = ((diff > unit) ? unit : diff) * direction;
   z_offset_value -= unit;
-  mustStoreCmd("M206 Z%.2f\n", z_offset_value);  // set Z offset value
-  mustStoreCmd("G1 Z%.2f\n", unit);              // move nozzle
+  sendParameterCmd(P_HOME_OFFSET, AXIS_INDEX_Z, z_offset_value);  // set Z offset value
+  mustStoreCmd("G1 Z%.2f\n", unit);                               // move nozzle
 
   return z_offset_value;
 }

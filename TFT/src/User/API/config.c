@@ -1,7 +1,7 @@
 #include "config.h"
 #include "includes.h"
 
-#ifdef SERIAL_DEBUG_PORT  // To be used only when calling 'getConfigFromFile()' after boot process
+#if defined(SERIAL_DEBUG_PORT) && defined(DEBUG_SERIAL_CONFIG)  // To be used only when calling 'getConfigFromFile()' after boot process
   #define PRINTDEBUG(x) Serial_Puts(SERIAL_DEBUG_PORT, x);
 #else
   #define PRINTDEBUG(x)
@@ -18,9 +18,9 @@ const GUI_RECT  rectProgressframe = {BYTE_WIDTH/2-2, LCD_HEIGHT-(BYTE_HEIGHT*2+B
 const GUI_POINT pointProgressText = {BYTE_WIDTH/2-2, LCD_HEIGHT-(BYTE_HEIGHT*4)};
 
 const char * const config_keywords[CONFIG_COUNT] = {
-#define X_CONFIG(NAME) CONFIG_##NAME,
-  #include "config.inc"
-#undef X_CONFIG
+  #define X_CONFIG(NAME) CONFIG_##NAME ,
+    #include "config.inc"
+  #undef X_CONFIG
 };
 
 const char * const cgList[] = CUSTOM_GCODE_LIST;
@@ -31,6 +31,7 @@ CONFIGFILE* CurConfigFile;
 CUSTOM_GCODES* configCustomGcodes = NULL;
 PRINT_GCODES* configPrintGcodes = NULL;
 STRINGS_STORE* configStringsStore = NULL;
+PREHEAT_STORE* configPreheatStore = NULL;
 
 char * cur_line = NULL;
 uint16_t c_index = 0;
@@ -50,10 +51,12 @@ bool getConfigFromFile(void)
   CUSTOM_GCODES tempCustomGcodes;
   PRINT_GCODES tempPrintCodes;
   STRINGS_STORE tempStringStore;
+  PREHEAT_STORE tempPreheatStore;
 
   configCustomGcodes = &tempCustomGcodes;
   configPrintGcodes = &tempPrintCodes;
   configStringsStore = &tempStringStore;
+  configPreheatStore = &tempPreheatStore;
   customcode_index = 0;
   foundkeys = 0;
 
@@ -71,10 +74,10 @@ bool getConfigFromFile(void)
     PRINTDEBUG(configCustomGcodes->gcode[1]);
     if (scheduleRotate)
     {
-      LCD_RefreshDirection();
+      LCD_RefreshDirection(infoSettings.rotated_ui);
       TSC_Calibration();
     }
-    storePara();
+    storePara();  // TODO: The touch sign will also be written if the touch calibration data is invalid
     saveConfig();
     PRINTDEBUG("config saved\n");
     return true;
@@ -244,9 +247,9 @@ bool inLimit(int val, int min, int max)
 bool key_seen(const char * keyStr)
 {
   uint16_t i;
-  for (c_index = 0; c_index < ACK_MAX_SIZE && cur_line[c_index] != 0; c_index++)
+  for (c_index = 0; c_index < LINE_MAX_CHAR && cur_line[c_index] != 0; c_index++)
   {
-    for (i = 0; keyStr[i] != 0 && cur_line[c_index + i] != 0 && cur_line[c_index + i] == keyStr[i]; i++)
+    for (i = 0; (c_index + i) < LINE_MAX_CHAR && keyStr[i] != 0 && cur_line[c_index + i] == keyStr[i]; i++)
     {}
     if (keyStr[i] == 0)
     {
@@ -255,6 +258,22 @@ bool key_seen(const char * keyStr)
     }
   }
   return false;
+}
+
+// check if config keyword exits with a full matching in the buffer line
+bool param_seen(const char * keyStr)
+{
+  bool found = key_seen(keyStr);
+  if (found)
+  {
+    size_t index = c_index - strlen(keyStr);
+    if (index > 0)
+    {
+      if (cur_line[index - 1] != ' ')  // if keyStr is not fully matching (it is a substring of another key))
+        return false;
+    }
+  }
+  return found;
 }
 
 // Get the int after config keyword.
@@ -266,7 +285,7 @@ static inline int config_int(void)
 // Get valid int value or old value
 static int valid_intValue(int min, int max, int defaultVal)
 {
-  if (inLimit(config_int(),min, max))
+  if (inLimit(config_int(), min, max))
     return config_int();
   else
     return defaultVal;
@@ -334,7 +353,7 @@ void parseConfigLine(void)
 {
   for (uint16_t i = 0; i < CONFIG_COUNT; i++)
   {
-    if (key_seen(config_keywords[i]))
+    if (param_seen(config_keywords[i]))
     {
       PRINTDEBUG("\n");
       PRINTDEBUG((char *)config_keywords[i]);
@@ -383,6 +402,7 @@ void saveConfig(void)
   writeConfig((uint8_t *)configCustomGcodes, sizeof(CUSTOM_GCODES), CUSTOM_GCODE_ADDR, CUSTOM_GCODE_MAX_SIZE);
   writeConfig((uint8_t *)configPrintGcodes, sizeof(PRINT_GCODES), PRINT_GCODES_ADDR, PRINT_GCODES_MAX_SIZE);
   writeConfig((uint8_t *)configStringsStore, sizeof(STRINGS_STORE), STRINGS_STORE_ADDR, STRINGS_STORE_MAX_SIZE);
+  writeConfig((uint8_t *)configPreheatStore, sizeof(PREHEAT_STORE), PREHEAT_STORE_ADDR, PREHEAT_STORE_MAX_SIZE);
 
   #ifdef CONFIG_DEBUG
     CUSTOM_GCODES tempgcode;  // = NULL;
@@ -422,6 +442,7 @@ void resetConfig(void)
   CUSTOM_GCODES tempCG;
   STRINGS_STORE tempST;
   PRINT_GCODES tempPC;
+  PREHEAT_STORE tempPH;
 
   // restore custom gcode presets
   int n = 0;
@@ -437,17 +458,17 @@ void resetConfig(void)
   tempCG.count = n;
 
   // restore strings store
-  strcpy(tempST.marlin_title, MARLIN_BANNER_TEXT);
+  strcpy(tempST.marlin_title, MARLIN_TITLE);
 
   for (int i = 0; i < PREHEAT_COUNT; i++)
   {
-    strcpy(tempST.preheat_name[i],preheatNames[i]);
+    strcpy(tempPH.preheat_name[i], preheatNames[i]);
   }
 
   // restore print gcodes
-  strcpy(tempPC.start_gcode, PRINT_START_GCODE);
-  strcpy(tempPC.end_gcode, PRINT_END_GCODE);
-  strcpy(tempPC.cancel_gcode, PRINT_CANCEL_GCODE);
+  strcpy(tempPC.start_gcode, START_GCODE);
+  strcpy(tempPC.end_gcode, END_GCODE);
+  strcpy(tempPC.cancel_gcode, CANCEL_GCODE);
 
   // write restored config
   writeConfig((uint8_t *)&tempCG, sizeof(CUSTOM_GCODES), CUSTOM_GCODE_ADDR, CUSTOM_GCODE_MAX_SIZE);
@@ -526,23 +547,39 @@ void parseConfigKey(uint16_t index)
   {
     //----------------------------General Settings
 
-    case C_INDEX_STATUS_SCREEN:
-      infoSettings.status_screen = getOnOff();
+    case C_INDEX_SERIAL_PORT:
+      if (key_seen("P1:")) SET_VALID_INT_VALUE(infoSettings.serial_port[0], 1, BAUDRATE_COUNT - 1);
+      if (key_seen("P2:")) SET_VALID_INT_VALUE(infoSettings.serial_port[1], 0, BAUDRATE_COUNT - 1);
+      if (key_seen("P3:")) SET_VALID_INT_VALUE(infoSettings.serial_port[2], 0, BAUDRATE_COUNT - 1);
+      if (key_seen("P4:")) SET_VALID_INT_VALUE(infoSettings.serial_port[3], 0, BAUDRATE_COUNT - 1);
       break;
 
-    case C_INDEX_UART_BAUDRATE:
-      SET_VALID_INT_VALUE(infoSettings.baudrate, 0, BAUDRATE_COUNT - 1);
+    case C_INDEX_EMULATED_M600:
+    case C_INDEX_EMULATED_M109_M190:
+    case C_INDEX_EVENT_LED:
+    case C_INDEX_FILE_COMMENT_PARSING:
+      SET_BIT_VALUE(infoSettings.general_settings, ((index - C_INDEX_EMULATED_M600) + INDEX_EMULATED_M600), getOnOff());
       break;
 
-    case C_INDEX_MULTI_SERIAL:
-      SET_VALID_INT_VALUE(infoSettings.multi_serial, 0, MAX_MULTI_SERIAL - 1);
+    //----------------------------UI Settings
+
+    case C_INDEX_ROTATED_UI:
+      if (infoSettings.rotated_ui != getOnOff())
+      {
+        scheduleRotate = true;
+        infoSettings.rotated_ui = getOnOff();
+      }
       break;
 
     case C_INDEX_LANGUAGE:
       SET_VALID_INT_VALUE(infoSettings.language, 0, LANGUAGE_NUM - 1);
       break;
 
-    case C_INDEX_TITLE_BG:
+    case C_INDEX_STATUS_SCREEN:
+      infoSettings.status_screen = getOnOff();
+      break;
+
+    case C_INDEX_TITLE_BG_COLOR:
       config_set_color(&infoSettings.title_bg_color);
       break;
 
@@ -554,15 +591,15 @@ void parseConfigKey(uint16_t index)
       config_set_color(&infoSettings.font_color);
       break;
 
-    case C_INDEX_NOTIFY_COLOR:
+    case C_INDEX_REMINDER_FONT_COLOR:
       config_set_color(&infoSettings.reminder_color);
       break;
 
-    case C_INDEX_SD_NOTIFY_COLOR:
-      config_set_color(&infoSettings.sd_reminder_color);
+    case C_INDEX_STATUS_FONT_COLOR:
+      config_set_color(&infoSettings.status_color);
       break;
 
-    case C_INDEX_SS_XYZ_BG_COLOR:
+    case C_INDEX_STATUS_XYZ_BG_COLOR:
       config_set_color(&infoSettings.status_xyz_bg_color);
       break;
 
@@ -571,7 +608,7 @@ void parseConfigKey(uint16_t index)
       break;
 
     case C_INDEX_LIST_BUTTON_BG_COLOR:
-      config_set_color(&infoSettings.list_button_color);
+      config_set_color(&infoSettings.list_button_bg_color);
       break;
 
     case C_INDEX_MESH_MIN_COLOR:
@@ -586,75 +623,72 @@ void parseConfigKey(uint16_t index)
       SET_VALID_INT_VALUE(infoSettings.terminal_color_scheme, 0, 2);
       break;
 
-    case C_INDEX_ROTATE_UI:
-      if (infoSettings.rotate_ui != getOnOff())
-      {
-        scheduleRotate = true;
-        infoSettings.rotate_ui = getOnOff();
-      }
-      break;
-
-    case C_INDEX_TERMINAL_ACK:
-      infoSettings.terminalACK = getOnOff();
-      break;
-
-    case C_INDEX_INVERT_AXIS:
-      if (key_seen("X")) infoSettings.invert_axis[X_AXIS] = getOnOff();
-      if (key_seen("Y")) infoSettings.invert_axis[Y_AXIS] = getOnOff();
-      if (key_seen("Z")) infoSettings.invert_axis[Z_AXIS] = getOnOff();
-      if (key_seen("LY")) infoSettings.leveling_invert_y_axis = getOnOff();
-      break;
-
-    case C_INDEX_PERSISTENT_TEMP:
-      infoSettings.persistent_info = getOnOff();
-      break;
-
-    case C_INDEX_LIST_MODE:
-      infoSettings.file_listmode = getOnOff();
+    case C_INDEX_ACK_NOTIFICATION:
+      SET_VALID_INT_VALUE(infoSettings.ack_notification, 0, 2);
       break;
 
     case C_INDEX_FILES_SORT_BY:
       SET_VALID_INT_VALUE(infoSettings.files_sort_by, 0, SORT_BY_COUNT);
       break;
 
-    case C_INDEX_ACK_NOTIFICATION:
-      SET_VALID_INT_VALUE(infoSettings.ack_notification, 0, 2);
+    case C_INDEX_FILES_LIST_MODE:
+      infoSettings.files_list_mode = getOnOff();
+      break;
+
+    case C_INDEX_FILENAME_EXTENSION:
+      infoSettings.filename_extension = getOnOff();
+      break;
+
+    case C_INDEX_FAN_SPEED_PERCENTAGE:
+      infoSettings.fan_percentage = getOnOff();
+      break;
+
+    case C_INDEX_PERSISTENT_INFO:
+      infoSettings.persistent_info = getOnOff();
+      break;
+
+    case C_INDEX_TERMINAL_ACK:
+      infoSettings.terminal_ack = getOnOff();
       break;
 
     case C_INDEX_NOTIFICATION_M117:
       infoSettings.notification_m117 = getOnOff();
       break;
 
-    case C_INDEX_EMULATE_M600:
-      infoSettings.emulate_m600 = getOnOff();
+    case C_INDEX_PROG_DISP_TYPE:
+      SET_VALID_INT_VALUE(infoSettings.prog_disp_type, 0, 2);
       break;
 
-    //----------------------------Marlin Mode Settings (only for TFT24_V1.1 & TFT28/TFT35/TFT43/TFT50/TFT70_V3.0)
+    case C_INDEX_LAYER_DISP_TYPE:
+      SET_VALID_INT_VALUE(infoSettings.layer_disp_type, 0, 2);
+      break;
+
+    //----------------------------Marlin Mode Settings (only for TFT24 V1.1 & TFT28/TFT35/TFT43/TFT50/TFT70 V3.0)
 
     #ifdef HAS_EMULATOR
 
       case C_INDEX_MODE:
-        SET_VALID_INT_VALUE(infoSettings.mode, 0, MODE_COUNT - 1);
+        SET_VALID_INT_VALUE(infoSettings.mode, 0, MAX_MODE_COUNT - 1);
         break;
 
-      case C_INDEX_SERIAL_ON:
-        infoSettings.serial_alwaysOn = getOnOff();
+      case C_INDEX_SERIAL_ALWAYS_ON:
+        infoSettings.serial_always_on = getOnOff();
         break;
 
       case C_INDEX_MARLIN_BG_COLOR:
-        config_set_color(&infoSettings.marlin_mode_bg_color);
+        config_set_color(&infoSettings.marlin_bg_color);
         break;
 
       case C_INDEX_MARLIN_FONT_COLOR:
-        config_set_color(&infoSettings.marlin_mode_font_color);
+        config_set_color(&infoSettings.marlin_font_color);
         break;
 
       case C_INDEX_MARLIN_FULLSCREEN:
-        infoSettings.marlin_mode_fullscreen = getOnOff();
+        infoSettings.marlin_fullscreen = getOnOff();
         break;
 
       case C_INDEX_MARLIN_SHOW_TITLE:
-        infoSettings.marlin_mode_showtitle = getOnOff();
+        infoSettings.marlin_show_title = getOnOff();
         break;
 
       case C_INDEX_MARLIN_TITLE:
@@ -668,20 +702,15 @@ void parseConfigKey(uint16_t index)
       }
 
       case C_INDEX_MARLIN_TYPE:
-        SET_VALID_INT_VALUE(infoSettings.marlin_type, 0, MODE_COUNT - 1);
+        SET_VALID_INT_VALUE(infoSettings.marlin_type, 0, MODE_TYPE_COUNT - 1);
         break;
 
     #endif  // ST7920_EMULATOR || LCD2004_EMULATOR
 
-    //----------------------------RRF Mode Settings
-    case C_INDEX_RRF_MACROS_ON:
-      infoSettings.rrf_macros_enable = getOnOff();
-      break;
-
     //----------------------------Printer / Machine Settings
 
     case C_INDEX_HOTEND_COUNT:
-      SET_VALID_INT_VALUE(infoSettings.hotend_count, 1, MAX_HOTEND_COUNT);
+      SET_VALID_INT_VALUE(infoSettings.hotend_count, 0, MAX_HOTEND_COUNT);
       break;
 
     case C_INDEX_HEATED_BED:
@@ -693,7 +722,7 @@ void parseConfigKey(uint16_t index)
       break;
 
     case C_INDEX_EXT_COUNT:
-      SET_VALID_INT_VALUE(infoSettings.ext_count, 1, MAX_EXT_COUNT);
+      SET_VALID_INT_VALUE(infoSettings.ext_count, 0, MAX_EXT_COUNT);
       break;
 
     case C_INDEX_FAN_COUNT:
@@ -726,17 +755,17 @@ void parseConfigKey(uint16_t index)
       if (key_seen("F3:")) SET_VALID_INT_VALUE(infoSettings.fan_max[3], MIN_FAN_SPEED, MAX_FAN_SPEED);
       if (key_seen("F4:")) SET_VALID_INT_VALUE(infoSettings.fan_max[4], MIN_FAN_SPEED, MAX_FAN_SPEED);
       if (key_seen("F5:")) SET_VALID_INT_VALUE(infoSettings.fan_max[5], MIN_FAN_SPEED, MAX_FAN_SPEED);
-      if (key_seen("CtL:")) SET_VALID_INT_VALUE(infoSettings.fan_max[6], MIN_FAN_SPEED, MAX_FAN_SPEED);
+      if (key_seen("CtA:")) SET_VALID_INT_VALUE(infoSettings.fan_max[6], MIN_FAN_SPEED, MAX_FAN_SPEED);
       if (key_seen("CtI:")) SET_VALID_INT_VALUE(infoSettings.fan_max[7], MIN_FAN_SPEED, MAX_FAN_SPEED);
       break;
 
-    case C_INDEX_BUILD_MIN:
+    case C_INDEX_SIZE_MIN:
       if (key_seen("X")) SET_VALID_INT_VALUE(infoSettings.machine_size_min[X_AXIS], MIN_SIZE_LIMIT, MAX_SIZE_LIMIT);
       if (key_seen("Y")) SET_VALID_INT_VALUE(infoSettings.machine_size_min[Y_AXIS], MIN_SIZE_LIMIT, MAX_SIZE_LIMIT);
       if (key_seen("Z")) SET_VALID_INT_VALUE(infoSettings.machine_size_min[Z_AXIS], MIN_SIZE_LIMIT, MAX_SIZE_LIMIT);
       break;
 
-    case C_INDEX_BUILD_MAX:
+    case C_INDEX_SIZE_MAX:
       if (key_seen("X")) SET_VALID_INT_VALUE(infoSettings.machine_size_max[X_AXIS], MIN_SIZE_LIMIT, MAX_SIZE_LIMIT);
       if (key_seen("Y")) SET_VALID_INT_VALUE(infoSettings.machine_size_max[Y_AXIS], MIN_SIZE_LIMIT, MAX_SIZE_LIMIT);
       if (key_seen("Z")) SET_VALID_INT_VALUE(infoSettings.machine_size_max[Z_AXIS], MIN_SIZE_LIMIT, MAX_SIZE_LIMIT);
@@ -760,32 +789,24 @@ void parseConfigKey(uint16_t index)
       if (key_seen("F")) SET_VALID_INT_VALUE(infoSettings.ext_speed[2], MIN_SPEED_LIMIT, MAX_SPEED_LIMIT);
       break;
 
-    case C_INDEX_AUTO_LEVEL:
+    case C_INDEX_AUTO_LOAD_LEVELING:
       infoSettings.auto_load_leveling = getOnOff();
       break;
 
-    case C_INDEX_TOUCHMI_SENSOR:
-      infoSettings.touchmi_sensor = getOnOff();
-      break;
-
     case C_INDEX_ONBOARD_SD:
-      SET_VALID_INT_VALUE(infoSettings.onboardSD, 0, 2);
+      SET_VALID_INT_VALUE(infoSettings.onboard_sd, 0, 2);
       break;
 
-    case C_INDEX_M27_DELAY:
+    case C_INDEX_M27_REFRESH_TIME:
       SET_VALID_INT_VALUE(infoSettings.m27_refresh_time, MIN_DELAY_SEC, MAX_DELAY_SEC);
       break;
 
-    case C_INDEX_M27_KEEP_ON:
+    case C_INDEX_M27_ALWAYS_ACTIVE:
       infoSettings.m27_active = getOnOff();
       break;
 
     case C_INDEX_LONG_FILENAME:
-      SET_VALID_INT_VALUE(infoSettings.longFileName, 0, 2);
-      break;
-
-    case C_INDEX_FAN_PERCENT:
-      infoSettings.fan_percentage = getOnOff();
+      SET_VALID_INT_VALUE(infoSettings.long_filename, 0, 2);
       break;
 
     case C_INDEX_PAUSE_RETRACT:
@@ -808,7 +829,7 @@ void parseConfigKey(uint16_t index)
       if (key_seen("E")) SET_VALID_INT_VALUE(infoSettings.pause_feedrate[FEEDRATE_E], MIN_SPEED_LIMIT, MAX_SPEED_LIMIT);
       break;
 
-    case C_INDEX_LEVEL_EDGE:
+    case C_INDEX_LEVEL_EDGE_DISTANCE:
       SET_VALID_INT_VALUE(infoSettings.level_edge, MIN_Z_POS_LIMIT, MAX_SIZE_LIMIT);
       break;
 
@@ -825,16 +846,27 @@ void parseConfigKey(uint16_t index)
       if (key_seen("Z")) SET_VALID_INT_VALUE(infoSettings.level_feedrate[FEEDRATE_Z], MIN_SPEED_LIMIT, MAX_SPEED_LIMIT);
       break;
 
-    case C_INDEX_XY_OFFSET_PROBING:
-      infoSettings.xy_offset_probing = getOnOff();
+    case C_INDEX_INVERTED_AXIS:
+      if (key_seen("X")) SET_BIT_VALUE(infoSettings.inverted_axis, X_AXIS, getOnOff());
+      if (key_seen("Y")) SET_BIT_VALUE(infoSettings.inverted_axis, Y_AXIS, getOnOff());
+      if (key_seen("Z")) SET_BIT_VALUE(infoSettings.inverted_axis, Z_AXIS, getOnOff());
+      if (key_seen("LY")) SET_BIT_VALUE(infoSettings.inverted_axis, E_AXIS, getOnOff());  // leveling Y axis
       break;
 
-    case C_INDEX_Z_RAISE_PROBING:
-      SET_VALID_FLOAT_VALUE(infoSettings.z_raise_probing, MIN_Z_RAISE_PROBING, MAX_SIZE_LIMIT);
+    case C_INDEX_PROBING_Z_OFFSET:
+      infoSettings.probing_z_offset = getOnOff();
+      break;
+
+    case C_INDEX_PROBING_Z_RAISE:
+      SET_VALID_FLOAT_VALUE(infoSettings.probing_z_raise, MIN_PROBING_Z_RAISE, MAX_SIZE_LIMIT);
       break;
 
     case C_INDEX_Z_STEPPERS_ALIGNMENT:
       infoSettings.z_steppers_alignment = getOnOff();
+      break;
+
+    case C_INDEX_TOUCHMI_SENSOR:
+      infoSettings.touchmi_sensor = getOnOff();
       break;
 
     case C_INDEX_PREHEAT_NAME_1:
@@ -848,8 +880,8 @@ void parseConfigKey(uint16_t index)
       strcpy(pchr, strrchr(cur_line, ':') + 1);
       int utf8len = getUTF8Length((uint8_t *)pchr);
       int bytelen = strlen(pchr) + 1;
-      if (inLimit(utf8len, NAME_MIN_LENGTH, MAX_STRING_LENGTH) && inLimit(bytelen, NAME_MIN_LENGTH, MAX_GCODE_LENGTH))
-        strcpy(configStringsStore->preheat_name[index - C_INDEX_PREHEAT_NAME_1], pchr);
+      if (inLimit(utf8len, NAME_MIN_LENGTH, MAX_STRING_LENGTH) && inLimit(bytelen, NAME_MIN_LENGTH, MAX_STRING_LENGTH))
+        strcpy(configPreheatStore->preheat_name[index - C_INDEX_PREHEAT_NAME_1], pchr);
       break;
     }
 
@@ -861,44 +893,48 @@ void parseConfigKey(uint16_t index)
     case C_INDEX_PREHEAT_TEMP_6:
     {
       int val_index = index - C_INDEX_PREHEAT_TEMP_1;
-      if (key_seen("B")) SET_VALID_INT_VALUE(infoSettings.preheat_bed[val_index], MIN_BED_TEMP, MAX_BED_TEMP);
-      if (key_seen("T")) SET_VALID_INT_VALUE(infoSettings.preheat_temp[val_index], MIN_TOOL_TEMP, MAX_TOOL_TEMP);
+      if (key_seen("T")) SET_VALID_INT_VALUE(configPreheatStore->preheat_temp[val_index], MIN_TOOL_TEMP, MAX_TOOL_TEMP);
+      if (key_seen("B")) SET_VALID_INT_VALUE(configPreheatStore->preheat_bed[val_index], MIN_BED_TEMP, MAX_BED_TEMP);
       break;
     }
 
-    //----------------------------Power Supply Settings (if connected to TFT controller)
+    //----------------------------Power Supply Settings (only if connected to TFT controller)
 
     #ifdef PS_ON_PIN
-      case C_INDEX_PS_ON:
-        SET_VALID_INT_VALUE(infoSettings.auto_off, 0, 2);
-        break;
-
-      case C_INDEX_PS_LOGIC:
+      case C_INDEX_PS_ACTIVE_HIGH:
         infoSettings.ps_active_high = getOnOff();
         break;
 
-      case C_INDEX_SHUTDOWN_TEMP:
-        SET_VALID_INT_VALUE(infoSettings.auto_off_temp, MIN_TOOL_TEMP, MAX_TOOL_TEMP);
+      case C_INDEX_PS_AUTO_SHUTDOWN:
+        SET_VALID_INT_VALUE(infoSettings.auto_shutdown, 0, 2);
+        break;
+
+      case C_INDEX_PS_AUTO_SHUTDOWN_TEMP:
+        SET_VALID_INT_VALUE(infoSettings.auto_shutdown_temp, MIN_TOOL_TEMP, MAX_TOOL_TEMP);
         break;
     #endif
 
-    //----------------------------Filament Runout Settings (if connected to TFT controller)
+    //----------------------------Filament Runout Settings (only if connected to TFT controller)
 
     #ifdef FIL_RUNOUT_PIN
-      case C_INDEX_RUNOUT:
-        if (inLimit(config_int(), 0, 2))
-          infoSettings.runout = config_int();
+      case C_INDEX_FIL_RUNOUT:
+        if (inLimit(config_int(), 0, 3))
+        {
+          SET_BIT_VALUE(infoSettings.runout, RUNOUT_ENABLED, GET_BIT(config_int(), RUNOUT_ENABLED));
+          SET_BIT_VALUE(infoSettings.runout, RUNOUT_SENSOR_TYPE, GET_BIT(config_int(), RUNOUT_SENSOR_TYPE));
+        }
         break;
 
-      case C_INDEX_RUNOUT_LOGIC:
-        infoSettings.runout_invert = getOnOff();
+      case C_INDEX_FIL_RUNOUT_INVERTED:
+      case C_INDEX_FIL_RUNOUT_NC:
+        SET_BIT_VALUE(infoSettings.runout, (RUNOUT_INVERTED + (index - C_INDEX_FIL_RUNOUT_INVERTED)), getOnOff());
         break;
 
-      case C_INDEX_RUNOUT_NOISE:
-        SET_VALID_INT_VALUE(infoSettings.runout_noise_ms, MIN_DELAY_MS, MAX_DELAY_MS);
+      case C_INDEX_FIL_RUNOUT_NOISE:
+        SET_VALID_INT_VALUE(infoSettings.runout_noise, MIN_DELAY_MS, MAX_DELAY_MS);
         break;
 
-      case C_INDEX_RUNOUT_DISTANCE:
+      case C_INDEX_FIL_RUNOUT_DISTANCE:
         SET_VALID_INT_VALUE(infoSettings.runout_distance, MIN_RUNOUT_DISTANCE, MAX_RUNOUT_DISTANCE);
         break;
     #endif
@@ -906,19 +942,19 @@ void parseConfigKey(uint16_t index)
     //----------------------------Power Loss Recovery & BTT UPS Settings
 
     #ifdef BTT_MINI_UPS
-      case C_INDEX_POWERLOSS_EN:
-        infoSettings.powerloss_en = getOnOff();
+      case C_INDEX_PL_RECOVERY:
+        infoSettings.plr = getOnOff();
         break;
 
-      case C_INDEX_POWERLOSS_HOME:
-        infoSettings.powerloss_home = getOnOff();
+      case C_INDEX_PL_RECOVERY_HOME:
+        infoSettings.plr_home = getOnOff();
         break;
 
-      case C_INDEX_POWERLOSS_ZRAISE:
-        SET_VALID_FLOAT_VALUE(infoSettings.powerloss_z_raise, MIN_Z_POS_LIMIT, MAX_SIZE_LIMIT);
+      case C_INDEX_PL_RECOVERY_Z_RAISE:
+        SET_VALID_FLOAT_VALUE(infoSettings.plr_z_raise, MIN_Z_POS_LIMIT, MAX_SIZE_LIMIT);
         break;
 
-      case C_INDEX_BTT_MINIUPS:
+      case C_INDEX_BTT_MINI_UPS:
         infoSettings.btt_ups = getOnOff();
         break;
     #endif
@@ -927,25 +963,36 @@ void parseConfigKey(uint16_t index)
 
     #ifdef BUZZER_PIN
       case C_INDEX_TOUCH_SOUND:
-        infoSettings.touchSound = getOnOff();
-        break;
-
       case C_INDEX_TOAST_SOUND:
-        infoSettings.toastSound = getOnOff();
-        break;
-
       case C_INDEX_ALERT_SOUND:
-        infoSettings.alertSound = getOnOff();
+      case C_INDEX_HEATER_SOUND:
+        SET_BIT_VALUE(infoSettings.sounds, (index - C_INDEX_TOUCH_SOUND), getOnOff());
+        break;
+    #endif
+
+    #ifdef LCD_LED_PWM_CHANNEL
+      case C_INDEX_LCD_BRIGHTNESS:
+        SET_VALID_INT_VALUE(infoSettings.lcd_brightness, 0, LCD_BRIGHTNESS_COUNT - 1);
+        if (infoSettings.lcd_brightness == 0)
+          infoSettings.lcd_brightness = 1;  // If someone set it to 0 set it to 1
         break;
 
-      case C_INDEX_HEATER_SOUND:
-        infoSettings.heaterSound = getOnOff();
+      case C_INDEX_LCD_IDLE_BRIGHTNESS:
+        SET_VALID_INT_VALUE(infoSettings.lcd_idle_brightness, 0, LCD_BRIGHTNESS_COUNT - 1);
+        break;
+
+      case C_INDEX_LCD_IDLE_TIME:
+        SET_VALID_INT_VALUE(infoSettings.lcd_idle_time, 0, LCD_IDLE_TIME_COUNT - 1);
+        break;
+
+      case C_INDEX_LCD_LOCK_ON_IDLE:
+        infoSettings.lcd_lock_on_idle = getOnOff();
         break;
     #endif
 
     #ifdef LED_COLOR_PIN
-      case C_INDEX_KNOB_COLOR:
-        SET_VALID_INT_VALUE(infoSettings.knob_led_color, 0, LED_COLOR_NUM - 1);
+      case C_INDEX_KNOB_LED_COLOR:
+        SET_VALID_INT_VALUE(infoSettings.knob_led_color, 0, LED_COLOR_COUNT - 1);
         break;
 
       #ifdef LCD_LED_PWM_CHANNEL
@@ -960,23 +1007,7 @@ void parseConfigKey(uint16_t index)
         break;
     #endif
 
-    #ifdef LCD_LED_PWM_CHANNEL
-      case C_INDEX_BRIGHTNESS:
-        SET_VALID_INT_VALUE(infoSettings.lcd_brightness, 0, ITEM_BRIGHTNESS_NUM - 1);
-        if (infoSettings.lcd_brightness == 0)
-          infoSettings.lcd_brightness = 1; // If someone set it to 0 set it to 1
-        break;
-
-      case C_INDEX_BRIGHTNESS_IDLE:
-        SET_VALID_INT_VALUE(infoSettings.lcd_idle_brightness, 0, ITEM_BRIGHTNESS_NUM - 1);
-        break;
-
-      case C_INDEX_BRIGHTNESS_IDLE_DELAY:
-        SET_VALID_INT_VALUE(infoSettings.lcd_idle_timer, 0, ITEM_SECONDS_NUM - 1);
-        break;
-    #endif
-
-    //----------------------------Custom Gcode Commands
+    //----------------------------Custom G-code Commands
 
     case C_INDEX_CUSTOM_LABEL_1:
     case C_INDEX_CUSTOM_LABEL_2:
@@ -1037,18 +1068,12 @@ void parseConfigKey(uint16_t index)
       break;
     }
 
-    //----------------------------Start, End & Cancel Gcode Commands
+    //----------------------------Start, End & Cancel G-code Commands
 
-    case C_INDEX_START_GCODE_ON:
-      infoSettings.send_start_gcode = getOnOff();
-      break;
-
-    case C_INDEX_END_GCODE_ON:
-      infoSettings.send_end_gcode = getOnOff();
-      break;
-
-    case C_INDEX_CANCEL_GCODE_ON:
-      infoSettings.send_cancel_gcode = getOnOff();
+    case C_INDEX_START_GCODE_ENABLED:
+    case C_INDEX_END_GCODE_ENABLED:
+    case C_INDEX_CANCEL_GCODE_ENABLED:
+      SET_BIT_VALUE(infoSettings.send_gcodes, (index - C_INDEX_START_GCODE_ENABLED), getOnOff());
       break;
 
     case C_INDEX_START_GCODE:

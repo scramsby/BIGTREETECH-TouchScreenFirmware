@@ -1,11 +1,12 @@
 /**
-* Icon Keywords Generation
-* Usage: X_ICON(VALUE)
-* 'VALUE' is the keyword name without the 'ICON_'
-*
-* Description: https://en.wikipedia.org/wiki/X_Macro
-*/
-//after changing/adding/removing an icon, change the ICON_FLASH_SIGN in Settings.h
+ * Icon Keywords Generation
+ * Usage: X_ICON(VALUE)
+ * 'VALUE' is the keyword name without the 'ICON_'
+ *
+ * Description: https://en.wikipedia.org/wiki/X_Macro
+ *
+ * After changing/adding/removing an icon, change the ICON_FLASH_SIGN in Settings.h
+ */
 
 X_ICON (HEAT)
 X_ICON (MOVE)
@@ -68,7 +69,6 @@ X_ICON (LANGUAGE)
 X_ICON (TOUCHSCREEN_ADJUST)
 X_ICON (MORE)
 X_ICON (SCREEN_INFO)
-X_ICON (MARLIN_MODE)
 X_ICON (DISCONNECT)
 X_ICON (BAUD_RATE)
 X_ICON (PERCENTAGE)
@@ -82,8 +82,8 @@ X_ICON (POINT_2)
 X_ICON (POINT_3)
 X_ICON (POINT_4)
 X_ICON (POINT_5)
-X_ICON (MARLIN)
-X_ICON (BIGTREETECH)
+X_ICON (MARLIN_MODE)
+X_ICON (TOUCH_MODE)
 X_ICON (GCODE)
 X_ICON (BLTOUCH)
 X_ICON (BLTOUCH_DEPLOY)
@@ -117,6 +117,7 @@ X_ICON (GLOBAL_BED)
 X_ICON (GLOBAL_NOZZLE)
 X_ICON (PRINTING_NOZZLE)
 X_ICON (PRINTING_BED)
+X_ICON (PRINTING_CHAMBER)
 X_ICON (PRINTING_FAN)
 X_ICON (PRINTING_TIMER)
 X_ICON (PRINTING_ZLAYER)
@@ -128,6 +129,7 @@ X_ICON (HEAT_FAN)
 X_ICON (COOLDOWN)
 X_ICON (STATUS_NOZZLE)
 X_ICON (STATUS_BED)
+X_ICON (STATUS_CHAMBER)
 X_ICON (STATUS_FAN)
 X_ICON (STATUS_SPEED)
 X_ICON (STATUS_FLOW)
@@ -145,4 +147,5 @@ X_ICON (Z_ALIGN)
 X_ICON (MESH_EDITOR)
 X_ICON (BRIGHTNESS)
 X_ICON (MESH_VALID)
-//after changing/adding/removing an icon, change the ICON_FLASH_SIGN in Settings.h
+X_ICON (DELTA_CALIBRATE)
+// After changing/adding/removing an icon, change the ICON_FLASH_SIGN in Settings.h

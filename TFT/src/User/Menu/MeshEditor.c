@@ -55,8 +55,6 @@ typedef struct
   float bDelta;                                            // bEnd - bStart
 
   MESH_DATA_STATUS status;                                 // current status of dataOrig/data
-
-  float ablState;
   uint16_t parsedRows;
 
   uint16_t colsToSkip;
@@ -88,6 +86,8 @@ typedef enum
   ME_KEY_NEXT,
   ME_KEY_DOWN,
   ME_KEY_NUM,                                              // number of keys
+  ME_KEY_INCREASE = KEY_INCREASE,
+  ME_KEY_DECREASE = KEY_DECREASE,
   ME_KEY_IDLE = IDLE_TOUCH,
 } MESH_KEY_VALUES;
 
@@ -96,19 +96,21 @@ typedef enum
   ME_AREA_GRID = 0,
   ME_AREA_INFO,
   ME_AREA_KEY,
+  #ifdef PORTRAIT_MODE
+    ME_AREA_ARROW,
+  #endif
   ME_AREA_NUM,                                             // number of areas
   ME_AREA_IDLE = IDLE_TOUCH,
 } MESH_AREA_VALUES;
 
-// colors
-#define MESH_FONT_COLOR     infoSettings.font_color
-#define MESH_BG_COLOR       infoSettings.bg_color
-#define MESH_BORDER_COLOR   infoSettings.list_border_color
-#define MESH_BORDER_COLOR_2 0x4b0d
-
 // layout sizes
-#define MESH_GRID_HEIGHT     (LCD_HEIGHT - ICON_START_Y)
-#define MESH_GRID_WIDTH      MESH_GRID_HEIGHT
+#ifdef PORTRAIT_MODE
+  #define MESH_GRID_HEIGHT   (LCD_WIDTH - (LCD_WIDTH / 3))
+  #define MESH_GRID_WIDTH    MESH_GRID_HEIGHT
+#else
+  #define MESH_GRID_HEIGHT   (LCD_HEIGHT - ICON_START_Y)
+  #define MESH_GRID_WIDTH    MESH_GRID_HEIGHT
+#endif
 #define MESH_POINT_MIN_RATIO 3.0f
 #define MESH_POINT_MED_RATIO 5.0f
 #define MESH_POINT_MAX_RATIO 8.0f
@@ -118,10 +120,17 @@ typedef enum
 #define MESH_INFO_HEIGHT  (ICON_START_Y / MESH_INFO_ROW_NUM)
 #define MESH_INFO_WIDTH   (MESH_GRID_WIDTH / MESH_INFO_COL_NUM)
 
-#define MESH_KEY_ROW_NUM 6
-#define MESH_KEY_COL_NUM 2
-#define MESH_KEY_HEIGHT  (LCD_HEIGHT / MESH_KEY_ROW_NUM)
-#define MESH_KEY_WIDTH   (LCD_WIDTH - MESH_GRID_WIDTH) / MESH_KEY_COL_NUM
+#ifdef PORTRAIT_MODE
+  #define MESH_KEY_ROW_NUM 5
+  #define MESH_KEY_COL_NUM 1
+  #define MESH_KEY_HEIGHT  (LCD_HEIGHT / MESH_KEY_ROW_NUM)
+  #define MESH_KEY_WIDTH   ((LCD_WIDTH - MESH_GRID_WIDTH) / MESH_KEY_COL_NUM)
+#else
+  #define MESH_KEY_ROW_NUM 6
+  #define MESH_KEY_COL_NUM 2
+  #define MESH_KEY_HEIGHT  (LCD_HEIGHT / MESH_KEY_ROW_NUM)
+  #define MESH_KEY_WIDTH   ((LCD_WIDTH - MESH_GRID_WIDTH) / MESH_KEY_COL_NUM)
+#endif
 
 #ifdef KEYBOARD_ON_LEFT
   #define MESH_GRID_X0 (LCD_WIDTH - MESH_GRID_WIDTH)
@@ -139,6 +148,17 @@ typedef enum
   #define MESH_KEY_Y0  0
 #endif
 
+#ifdef PORTRAIT_MODE
+  #define MESH_ARROW_HEIGHT ((LCD_HEIGHT - (ICON_START_Y + MESH_GRID_HEIGHT)) / 3)
+  #define MESH_ARROW_WIDTH  (MESH_GRID_WIDTH / 2)
+  #define MESH_ARROW_Y0     (ICON_START_Y + MESH_GRID_HEIGHT)
+  #ifdef KEYBOARD_ON_LEFT
+    #define MESH_ARROW_X0   MESH_ARROW_WIDTH
+  #else
+    #define MESH_ARROW_X0   0
+  #endif
+#endif
+
 const GUI_RECT meshGridRect = {MESH_GRID_X0, MESH_GRID_Y0, MESH_GRID_X0 + MESH_GRID_WIDTH, MESH_GRID_Y0 + MESH_GRID_HEIGHT};
 
 const GUI_RECT meshInfoRect[ME_INFO_NUM] = {
@@ -151,21 +171,43 @@ const GUI_RECT meshInfoRect[ME_INFO_NUM] = {
   {MESH_INFO_X0 + 1 * MESH_INFO_WIDTH, MESH_INFO_Y0 + 0 * MESH_INFO_HEIGHT, MESH_INFO_X0 + 2 * MESH_INFO_WIDTH, MESH_INFO_Y0 + 1 * MESH_INFO_HEIGHT},// max value
   {MESH_INFO_X0 + 2 * MESH_INFO_WIDTH, MESH_INFO_Y0 + 0 * MESH_INFO_HEIGHT, MESH_INFO_X0 + 3 * MESH_INFO_WIDTH, MESH_INFO_Y0 + 1 * MESH_INFO_HEIGHT},// original value
 #endif
+
+  // current value
+#ifdef PORTRAIT_MODE
+  {MESH_KEY_X0 + 0 * MESH_KEY_WIDTH, MESH_KEY_Y0 + 4 * MESH_KEY_HEIGHT, MESH_KEY_X0 + 1 * MESH_KEY_WIDTH, MESH_KEY_Y0 + 5 * MESH_KEY_HEIGHT},        // current value
+#else
   {MESH_KEY_X0 + 0 * MESH_KEY_WIDTH, MESH_KEY_Y0 + 2 * MESH_KEY_HEIGHT, MESH_KEY_X0 + 2 * MESH_KEY_WIDTH, MESH_KEY_Y0 + 3 * MESH_KEY_HEIGHT},        // current value
+#endif
 };
 
 const GUI_RECT meshKeyRect[ME_KEY_NUM] = {
-#ifdef KEYBOARD_ON_LEFT
-  {MESH_KEY_X0 + 1 * MESH_KEY_WIDTH, MESH_KEY_Y0 + 0 * MESH_KEY_HEIGHT, MESH_KEY_X0 + 2 * MESH_KEY_WIDTH, MESH_KEY_Y0 + 1 * MESH_KEY_HEIGHT},        // SAVE
+#ifdef PORTRAIT_MODE
+  {MESH_KEY_X0 + 0 * MESH_KEY_WIDTH, MESH_KEY_Y0 + 1 * MESH_KEY_HEIGHT, MESH_KEY_X0 + 1 * MESH_KEY_WIDTH, MESH_KEY_Y0 + 2 * MESH_KEY_HEIGHT},        // SAVE
   {MESH_KEY_X0 + 0 * MESH_KEY_WIDTH, MESH_KEY_Y0 + 0 * MESH_KEY_HEIGHT, MESH_KEY_X0 + 1 * MESH_KEY_WIDTH, MESH_KEY_Y0 + 1 * MESH_KEY_HEIGHT},        // OK
-  {MESH_KEY_X0 + 1 * MESH_KEY_WIDTH, MESH_KEY_Y0 + 1 * MESH_KEY_HEIGHT, MESH_KEY_X0 + 2 * MESH_KEY_WIDTH, MESH_KEY_Y0 + 2 * MESH_KEY_HEIGHT},        // RESET
-  {MESH_KEY_X0 + 0 * MESH_KEY_WIDTH, MESH_KEY_Y0 + 1 * MESH_KEY_HEIGHT, MESH_KEY_X0 + 1 * MESH_KEY_WIDTH, MESH_KEY_Y0 + 2 * MESH_KEY_HEIGHT},        // HOME
+  {MESH_KEY_X0 + 0 * MESH_KEY_WIDTH, MESH_KEY_Y0 + 2 * MESH_KEY_HEIGHT, MESH_KEY_X0 + 1 * MESH_KEY_WIDTH, MESH_KEY_Y0 + 3 * MESH_KEY_HEIGHT},        // RESET
+  {MESH_KEY_X0 + 0 * MESH_KEY_WIDTH, MESH_KEY_Y0 + 3 * MESH_KEY_HEIGHT, MESH_KEY_X0 + 1 * MESH_KEY_WIDTH, MESH_KEY_Y0 + 4 * MESH_KEY_HEIGHT},        // HOME
+
+  // current value
+  {MESH_KEY_X0 + 0 * MESH_KEY_WIDTH, MESH_KEY_Y0 + 4 * MESH_KEY_HEIGHT, MESH_KEY_X0 + 1 * MESH_KEY_WIDTH, MESH_KEY_Y0 + 5 * MESH_KEY_HEIGHT},        // current value
+
+  // arrow keys
+  {MESH_ARROW_X0 + 0 * MESH_ARROW_WIDTH, MESH_ARROW_Y0 + 0 * MESH_ARROW_HEIGHT, MESH_ARROW_X0 + 2 * MESH_ARROW_WIDTH, MESH_ARROW_Y0 + 1 * MESH_ARROW_HEIGHT},  // UP
+  {MESH_ARROW_X0 + 0 * MESH_ARROW_WIDTH, MESH_ARROW_Y0 + 1 * MESH_ARROW_HEIGHT, MESH_ARROW_X0 + 1 * MESH_ARROW_WIDTH, MESH_ARROW_Y0 + 2 * MESH_ARROW_HEIGHT},  // PREV
+  {MESH_ARROW_X0 + 1 * MESH_ARROW_WIDTH, MESH_ARROW_Y0 + 1 * MESH_ARROW_HEIGHT, MESH_ARROW_X0 + 2 * MESH_ARROW_WIDTH, MESH_ARROW_Y0 + 2 * MESH_ARROW_HEIGHT},  // NEXT
+  {MESH_ARROW_X0 + 0 * MESH_ARROW_WIDTH, MESH_ARROW_Y0 + 2 * MESH_ARROW_HEIGHT, MESH_ARROW_X0 + 2 * MESH_ARROW_WIDTH, MESH_ARROW_Y0 + 3 * MESH_ARROW_HEIGHT},  // DOWN
 #else
-  {MESH_KEY_X0 + 0 * MESH_KEY_WIDTH, MESH_KEY_Y0 + 0 * MESH_KEY_HEIGHT, MESH_KEY_X0 + 1 * MESH_KEY_WIDTH, MESH_KEY_Y0 + 1 * MESH_KEY_HEIGHT},        // SAVE
-  {MESH_KEY_X0 + 1 * MESH_KEY_WIDTH, MESH_KEY_Y0 + 0 * MESH_KEY_HEIGHT, MESH_KEY_X0 + 2 * MESH_KEY_WIDTH, MESH_KEY_Y0 + 1 * MESH_KEY_HEIGHT},        // OK
-  {MESH_KEY_X0 + 0 * MESH_KEY_WIDTH, MESH_KEY_Y0 + 1 * MESH_KEY_HEIGHT, MESH_KEY_X0 + 1 * MESH_KEY_WIDTH, MESH_KEY_Y0 + 2 * MESH_KEY_HEIGHT},        // RESET
-  {MESH_KEY_X0 + 1 * MESH_KEY_WIDTH, MESH_KEY_Y0 + 1 * MESH_KEY_HEIGHT, MESH_KEY_X0 + 2 * MESH_KEY_WIDTH, MESH_KEY_Y0 + 2 * MESH_KEY_HEIGHT},        // HOME
-#endif
+  #ifdef KEYBOARD_ON_LEFT
+    {MESH_KEY_X0 + 1 * MESH_KEY_WIDTH, MESH_KEY_Y0 + 0 * MESH_KEY_HEIGHT, MESH_KEY_X0 + 2 * MESH_KEY_WIDTH, MESH_KEY_Y0 + 1 * MESH_KEY_HEIGHT},      // SAVE
+    {MESH_KEY_X0 + 0 * MESH_KEY_WIDTH, MESH_KEY_Y0 + 0 * MESH_KEY_HEIGHT, MESH_KEY_X0 + 1 * MESH_KEY_WIDTH, MESH_KEY_Y0 + 1 * MESH_KEY_HEIGHT},      // OK
+    {MESH_KEY_X0 + 1 * MESH_KEY_WIDTH, MESH_KEY_Y0 + 1 * MESH_KEY_HEIGHT, MESH_KEY_X0 + 2 * MESH_KEY_WIDTH, MESH_KEY_Y0 + 2 * MESH_KEY_HEIGHT},      // RESET
+    {MESH_KEY_X0 + 0 * MESH_KEY_WIDTH, MESH_KEY_Y0 + 1 * MESH_KEY_HEIGHT, MESH_KEY_X0 + 1 * MESH_KEY_WIDTH, MESH_KEY_Y0 + 2 * MESH_KEY_HEIGHT},      // HOME
+  #else
+    {MESH_KEY_X0 + 0 * MESH_KEY_WIDTH, MESH_KEY_Y0 + 0 * MESH_KEY_HEIGHT, MESH_KEY_X0 + 1 * MESH_KEY_WIDTH, MESH_KEY_Y0 + 1 * MESH_KEY_HEIGHT},      // SAVE
+    {MESH_KEY_X0 + 1 * MESH_KEY_WIDTH, MESH_KEY_Y0 + 0 * MESH_KEY_HEIGHT, MESH_KEY_X0 + 2 * MESH_KEY_WIDTH, MESH_KEY_Y0 + 1 * MESH_KEY_HEIGHT},      // OK
+    {MESH_KEY_X0 + 0 * MESH_KEY_WIDTH, MESH_KEY_Y0 + 1 * MESH_KEY_HEIGHT, MESH_KEY_X0 + 1 * MESH_KEY_WIDTH, MESH_KEY_Y0 + 2 * MESH_KEY_HEIGHT},      // RESET
+    {MESH_KEY_X0 + 1 * MESH_KEY_WIDTH, MESH_KEY_Y0 + 1 * MESH_KEY_HEIGHT, MESH_KEY_X0 + 2 * MESH_KEY_WIDTH, MESH_KEY_Y0 + 2 * MESH_KEY_HEIGHT},      // HOME
+  #endif
+
   // current value
   {MESH_KEY_X0 + 0 * MESH_KEY_WIDTH, MESH_KEY_Y0 + 2 * MESH_KEY_HEIGHT, MESH_KEY_X0 + 2 * MESH_KEY_WIDTH, MESH_KEY_Y0 + 3 * MESH_KEY_HEIGHT},        // EDIT
 
@@ -174,12 +216,16 @@ const GUI_RECT meshKeyRect[ME_KEY_NUM] = {
   {MESH_KEY_X0 + 0 * MESH_KEY_WIDTH, MESH_KEY_Y0 + 4 * MESH_KEY_HEIGHT, MESH_KEY_X0 + 1 * MESH_KEY_WIDTH, MESH_KEY_Y0 + 5 * MESH_KEY_HEIGHT},        // PREV
   {MESH_KEY_X0 + 1 * MESH_KEY_WIDTH, MESH_KEY_Y0 + 4 * MESH_KEY_HEIGHT, MESH_KEY_X0 + 2 * MESH_KEY_WIDTH, MESH_KEY_Y0 + 5 * MESH_KEY_HEIGHT},        // NEXT
   {MESH_KEY_X0 + 0 * MESH_KEY_WIDTH, MESH_KEY_Y0 + 5 * MESH_KEY_HEIGHT, MESH_KEY_X0 + 2 * MESH_KEY_WIDTH, MESH_KEY_Y0 + 6 * MESH_KEY_HEIGHT},        // DOWN
+#endif
 };
 
 const GUI_RECT meshAreaRect[ME_AREA_NUM] = {
   {MESH_GRID_X0, MESH_GRID_Y0, MESH_GRID_X0 + MESH_GRID_WIDTH, MESH_GRID_Y0 + MESH_GRID_HEIGHT},             // grid area
-  {MESH_INFO_X0, MESH_INFO_Y0, MESH_INFO_X0 + MESH_GRID_WIDTH, MESH_INFO_Y0 + ICON_START_Y},                 // info area
-  {MESH_KEY_X0, MESH_KEY_Y0, MESH_KEY_X0 + (LCD_WIDTH - MESH_GRID_WIDTH), MESH_KEY_Y0 + LCD_HEIGHT},         // keyboard area
+  {MESH_INFO_X0, MESH_INFO_Y0, MESH_INFO_X0 + MESH_GRID_WIDTH, MESH_GRID_Y0},                                // info area
+  {MESH_KEY_X0, MESH_KEY_Y0, MESH_KEY_X0 + (LCD_WIDTH - MESH_GRID_WIDTH), LCD_HEIGHT},                       // keyboard area
+#ifdef PORTRAIT_MODE
+  {MESH_ARROW_X0, MESH_ARROW_Y0, MESH_ARROW_X0 + MESH_GRID_WIDTH, LCD_HEIGHT},                               // arrow area
+#endif
 };
 
 const char *const meshKeyString[ME_KEY_NUM] = {
@@ -201,7 +247,6 @@ const MESH_DATA_FORMAT meshDataFormat[] = {
   {0, 1, 1, "Bed Level Correction Matrix:"},               // ABL Linear or 3-Point
 };
 
-void (*meshSaveCallbackPtr)(void) = NULL;
 static MESH_DATA *meshData = NULL;
 
 void meshInitData(void)
@@ -236,11 +281,7 @@ void meshInitData(void)
   meshData->bDelta = (float) (meshData->bEnd) - meshData->bStart;
 
   meshData->status = ME_DATA_IDLE;
-
-  meshData->ablState = getParameter(P_ABL_STATE, 0);
   meshData->parsedRows = 0;
-
-  meshSaveCallbackPtr = NULL;
 }
 
 static inline void meshAllocData(void)
@@ -249,14 +290,9 @@ static inline void meshAllocData(void)
     return;
 
   meshData = (MESH_DATA *) malloc(sizeof(MESH_DATA));
-
   meshInitData();
 
-  probeHeightEnable();                                     // temporary disable software endstops
-
-  // if enabled, always disable ABL before editing a mesh
-  if (meshData->ablState == ENABLED)
-    storeCmd(infoMachineSettings.firmwareType != FW_REPRAPFW ? "M420 S0\n" : "G29 S2\n");
+  probeHeightEnable();                                     // temporary disable software endstops and save ABL state
 }
 
 void meshDeallocData(void)
@@ -264,15 +300,10 @@ void meshDeallocData(void)
   if (meshData == NULL)
     return;
 
-  // restore original ABL state
-  if (meshData->ablState == ENABLED)
-    storeCmd(infoMachineSettings.firmwareType != FW_REPRAPFW ? "M420 S1\n" : "G29 S1\n");
-
   free(meshData);
-
   meshData = NULL;
 
-  probeHeightDisable();                                    // restore original software endstops state
+  probeHeightDisable();                                    // restore original software endstops state and ABL state
 }
 
 static inline bool processKnownDataFormat(char *dataRow)
@@ -295,26 +326,22 @@ static inline bool processKnownDataFormat(char *dataRow)
     meshData->rowsToSkip = meshDataFormat[i].rowsToSkip;
     meshData->rowsInverted = meshDataFormat[i].rowsInverted;
 
-    meshSaveCallbackPtr = saveEepromSettings;
-
     switch (infoMachineSettings.leveling)
     {
       case BL_BBL:
-        sprintf(meshData->saveTitle, "%s", textSelect(LABEL_ABL_SETTINGS_BBL));
+        strcpy(meshData->saveTitle, (char *)textSelect(LABEL_ABL_SETTINGS_BBL));
         break;
 
       case BL_UBL:
-        meshSaveCallbackPtr = menuUBLSave;
-
-        sprintf(meshData->saveTitle, "%s", textSelect(LABEL_ABL_SETTINGS_UBL));
+        strcpy(meshData->saveTitle, (char *)textSelect(LABEL_ABL_SETTINGS_UBL));
         break;
 
       case BL_MBL:
-        sprintf(meshData->saveTitle, "%s", textSelect(LABEL_MBL_SETTINGS));
+        strcpy(meshData->saveTitle, (char *)textSelect(LABEL_MBL_SETTINGS));
         break;
 
       default:
-        sprintf(meshData->saveTitle, "%s", textSelect(LABEL_ABL_SETTINGS));
+        strcpy(meshData->saveTitle, (char *)textSelect(LABEL_ABL_SETTINGS));
         break;
     }
   }
@@ -324,8 +351,10 @@ static inline bool processKnownDataFormat(char *dataRow)
 
 void meshSaveCallback(void)
 {
-  if (meshSaveCallbackPtr != NULL)
-    meshSaveCallbackPtr();
+  if (infoMachineSettings.leveling == BL_UBL)
+    menuUBLSave();
+  else if (infoMachineSettings.leveling != BL_DISABLED)
+    saveEepromSettings();
 
   meshDeallocData();                                       // deallocate mesh data. It forces data reloading during Mesh Editor menu reloading
 }
@@ -651,6 +680,9 @@ void meshDrawMenu(void)
   GUI_DrawPrect(&meshAreaRect[ME_AREA_GRID]);              // draw grid area borders
   GUI_DrawPrect(&meshAreaRect[ME_AREA_INFO]);              // draw info area borders
   GUI_DrawPrect(&meshAreaRect[ME_AREA_KEY]);               // draw key borders
+  #ifdef PORTRAIT_MODE
+    GUI_DrawPrect(&meshAreaRect[ME_AREA_ARROW]);           // draw arrow area borders
+  #endif
 
   // draw value area borders (outer)
   drawBorder(&meshInfoRect[ME_INFO_CUR], MESH_BORDER_COLOR, 2);
@@ -830,7 +862,7 @@ void meshUpdateData(char *dataRow)
 
     popupReminder(DIALOG_TYPE_ERROR, LABEL_MESH_EDITOR, (uint8_t *) tempMsg);
 
-    infoMenu.cur--;                                        // exit from mesh editor menu. it avoids to loop in case of persistent error
+    CLOSE_MENU();                                          // exit from mesh editor menu. it avoids to loop in case of persistent error
 
     meshDeallocData();                                     // deallocate mesh data
   }
@@ -842,30 +874,24 @@ void menuMeshEditor(void)
   bool oldStatus, curStatus;
   uint16_t oldIndex, curIndex;
   float origValue, curValue;
-  bool forceHoming;
   bool forceExit;
 
   meshAllocData();                                         // allocates and initialize mesh data if not already allocated and initialized
 
   oldStatus = curStatus = meshGetStatus();                 // after allocation, we acces data status etc...
   oldIndex = curIndex = meshGetIndex();
-  forceHoming = true;
   forceExit = false;
 
   mustStoreCmd("M420 V1 T1\n");                            // retrieve the mesh data
 
   meshDrawMenu();
 
-  #if LCD_ENCODER_SUPPORT
-    encoderPosition = 0;
-  #endif
-
-  while (infoMenu.menu[infoMenu.cur] == menuMeshEditor)
+  while (MENU_IS(menuMeshEditor))
   {
     curStatus = meshGetStatus();                           // always load current status
     curIndex = meshGetIndex();                             // always load current index
-
     key_num = menuKeyGetValue();
+
     switch (key_num)
     {
       case ME_KEY_UP:
@@ -877,23 +903,20 @@ void menuMeshEditor(void)
         break;
 
       case ME_KEY_PREV:
+      case ME_KEY_DECREASE:
         curIndex = meshSetIndex(curIndex - 1);
         break;
 
       case ME_KEY_NEXT:
+      case ME_KEY_INCREASE:
         curIndex = meshSetIndex(curIndex + 1);
         break;
 
       case ME_KEY_EDIT:
         if (meshGetStatus())
         {
-          if (forceHoming)
-          {
-            forceHoming = false;
-
-            mustStoreCmd("G28\n");                         // only the first time, home the printer
-            probeHeightStop(infoSettings.z_raise_probing); // raise nozzle
-          }
+          if (coordinateIsKnown() == false)
+            probeHeightHome();                             // home, disable ABL and raise nozzle
 
           curValue = menuMeshTuner(meshGetCol(), meshGetJ(), meshGetValue(meshGetIndex()));
           meshSetValue(curValue);
@@ -916,10 +939,7 @@ void menuMeshEditor(void)
         break;
 
       case ME_KEY_HOME:
-        forceHoming = false;
-
-        mustStoreCmd("G28\n");                             // force homing (e.g. if steppers are disarmed)
-        probeHeightStop(infoSettings.z_raise_probing);     // raise nozzle
+        probeHeightHome();                                 // force homing (e.g. if steppers are disarmed)
         break;
 
       case ME_KEY_SAVE:
@@ -929,18 +949,10 @@ void menuMeshEditor(void)
       case ME_KEY_OK:
         forceExit = true;
 
-        infoMenu.cur--;
+        CLOSE_MENU();
         break;
 
       default:
-        #if LCD_ENCODER_SUPPORT
-          if (encoderPosition)
-          {
-            curIndex = meshSetIndex(curIndex + encoderPosition);
-
-            encoderPosition = 0;
-          }
-        #endif
         break;
     }
 

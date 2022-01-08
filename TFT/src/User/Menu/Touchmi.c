@@ -10,9 +10,9 @@ const MENUITEMS touchmiItems = {
     {ICON_NOZZLE_UP,               LABEL_Z_INC},
     {ICON_EEPROM_SAVE,             LABEL_SAVE},
     {ICON_PREHEAT_BOTH,            LABEL_TEST},
-    {ICON_BACKGROUND,              LABEL_BACKGROUND},
+    {ICON_NULL,                    LABEL_NULL},
     {ICON_NOZZLE_DOWN,             LABEL_Z_DEC},
-    {ICON_BACKGROUND,              LABEL_BACKGROUND},
+    {ICON_NULL,                    LABEL_NULL},
     {ICON_BACK,                    LABEL_BACK},
   }
 };
@@ -23,7 +23,7 @@ void menuTouchMi(void)
 
   menuDrawPage(&touchmiItems);
 
-  while (infoMenu.menu[infoMenu.cur] == menuTouchMi)
+  while (MENU_IS(menuTouchMi))
   {
     key_num = menuKeyGetValue();
     switch (key_num)
@@ -60,7 +60,7 @@ void menuTouchMi(void)
         break;
 
       case KEY_ICON_7:
-        infoMenu.cur--;
+        CLOSE_MENU();
         break;
 
       default:
